@@ -1,0 +1,137 @@
+\def\tituloconcepto{Decoherencia y spin echo}
+\input{cabecera}
+
+\section{Decoherencia y spin echo: perder y recuperar la fase de un qubit}
+
+\subsection{Objetivo}
+Entender por qué un qubit pierde información con el tiempo (relajación $T_1$ y
+$T_2$, estados mezclados), cómo el \emph{spin echo} recupera la fase perdida por
+la inhomogeneidad del campo y para qué sirve la secuencia CPMG.
+
+\subsection{Conceptos previos}
+\begin{concepto}{esfera de Bloch, precesión y estados mezclados}
+Ver capítulos~10 (esfera de Bloch), 11 (precesión y pulsos) y~12 (rotaciones).
+Un \emph{estado puro} es un punto en la superficie de la esfera de Bloch; un
+\emph{estado mezclado} es un punto en su interior.
+\end{concepto}
+
+\subsection{Fundamento teórico}
+\paragraph{Relajación y pérdida de información.} Un qubit de espín $1/2$ en
+un campo magnético tiene $\ket\uparrow\leftrightarrow\ket0$ y
+$\ket\downarrow\leftrightarrow\ket1$. Idealmente, el módulo del momento
+angular de espín promedio, $|\langle S\rangle|=\sqrt{\langle S_x\rangle^2+\langle
+S_y\rangle^2+\langle S_z\rangle^2}$, se conserva y el estado es puro. En la
+práctica, la relajación hace que el vector se acorte y entre en la esfera:
+el estado se vuelve \textbf{mezclado},
+$\rho_{\mathrm{mix}}=p_1\ket1\bra1+p_2\ket2\bra2+\cdots$, una combinación de
+estados puros con probabilidades clásicas. Eso representa \emph{pérdida de
+información}, porque aumenta la incertidumbre. Si el estado se mezcló poco,
+se puede estimar el estado puro correspondiente; si la componente transversal
+desaparece por completo, la información de fase se perdió por completo, y en el
+caso extremo (estado máximamente mezclado) ya no se puede obtener ninguna
+información midiendo. Hay dos procesos:
+\begin{itemize}
+  \item \textbf{Relajación longitudinal} ($T_1$): cambia la población de los
+    niveles (la componente $z$). Es la pérdida de energía hacia el entorno.
+  \item \textbf{Relajación transversal} ($T_2$, \emph{decoherencia}): se pierde la
+    coherencia de fase (las componentes $x$ e $y$).
+\end{itemize}
+En los sistemas de resonancia magnética nuclear (RMN), la relajación transversal
+pesa más que la longitudinal en la pérdida de información.
+
+\paragraph{Inhomogeneidad del campo.} Una muestra tiene muchos espines (un
+\emph{conjunto}). Si el campo no es uniforme, cada espín gira con una
+frecuencia de Larmor ligeramente distinta, así que sus fases se separan con el
+tiempo y la magnetización neta (el promedio) se acorta. Tras un pulso
+$R_y(\pi/2)$ que lleva el espín a $x$, la señal oscila y decae con envolvente
+exponencial $e^{-t/T_2^{*}}$. En un sistema sin conjunto (un solo espín medido
+muchas veces) pasa lo mismo si el campo fluctúa en el \emph{tiempo}.
+
+\paragraph{El eco de espín.} Erwin Hahn descubrió en 1950 que un pulso $\pi$ (de 180
+grados) aplicado en medio de la relajación revierte las fases y produce un
+``eco''. Para un conjunto de espines, con tiempo total $t$:
+\begin{enumerate}
+  \item Al inicio todos apuntan a $x$: polarización máxima.
+  \item Durante $t/2$ cada espín acumula la fase $\theta_i=\omega_it/2$ y la
+    magnetización decae.
+  \item Un pulso $R_x(\pi)$ en $t/2$ invierte las fases: $\theta_i\to-\omega_it/2$.
+  \item Durante la segunda mitad cada espín vuelve a acumular $\omega_it/2$.
+  \item En $t$ la fase es $-\omega_it/2+\omega_it/2=0$ para todos: la polarización
+    se recupera.
+\end{enumerate}
+El eco es \emph{menor} que la señal inicial: el spin echo retrasa la
+relajación transversal pero no la elimina, porque los espines también
+interactúan con la red (relajación natural). Con eco, la señal decae con
+$T_2$; sin eco, con $T_2^{*}$, y en general $T_2\ge T_2^{*}$. Después de
+$t=T_2$ la componente transversal baja a $1/e\approx0.368$ de su máximo. Para
+informática cuántica se usa $T_2$ como tiempo de coherencia.
+
+\paragraph{Secuencias.} Un solo pulso $\pi$ da un eco, pero su fase puede no
+coincidir con la inicial (depende del eje del pulso y de la dirección inicial).
+Para conservar el estado se añade un segundo pulso $\pi$ en el eco: así la fase
+coincide siempre con la inicial. La secuencia \textbf{CPMG} (Carr, Purcell,
+Meiboom y Gill) aplica pulsos $\pi$ a intervalos regulares para intervalos
+largos; \emph{CPMG-$n$} son $n$ pulsos en un tiempo $t$, con separación
+$t/n$ (el primero y el último a $t/2n$ de los extremos). CPMG funciona en muchos
+experimentos, pero no elimina todas las fuentes de decaimiento (como la
+difusión o el intercambio químico).
+
+\begin{nota}{Fuentes y modelo del ejemplo}
+Este capítulo se basa en las notas de spin echo del curso. Los valores
+numéricos ($T_1=100$~ms, $T_2=40$~ms, dispersión de frecuencias de $100$~Hz,
+fluctuación lenta de $30$~Hz con tiempo de correlación de $10$~ms) \textbf{son
+elegidos para ilustrar}, no medidos. El archivo de teoría de decoherencia del
+curso es un escaneo sin texto legible, así que el modelo de Bloch para $T_1$ y
+$T_2$ es el estándar de la definición de las notas.
+\end{nota}
+
+\subsection{Código (completamente comentado)}
+\lstinputlisting[style=py]{../../fuentes/21_decoherencia_spin_echo.py}
+
+\subsection{Explicación celda por celda}
+\begin{description}
+  \item[Celda 2] Evoluciona el vector de Bloch con $T_1$ y $T_2$ y calcula su
+    longitud y la pureza $(1+|\mathbf r|^2)/2$.
+  \item[Celda 3] Simula 5000 espines con frecuencias distintas y compara la
+    magnetización con la fórmula gaussiana $e^{-(2\pi\sigma t)^2/2}$.
+  \item[Celda 4] Compara la señal sin eco y con eco para varios tiempos.
+  \item[Celda 5] Sigue la fase de un espín con rotaciones $3\times3$ para
+    cuatro combinaciones de fase inicial y eje del pulso $\pi$, con uno y
+    con dos pulsos.
+  \item[Celda 6] Compara sin pulsos, spin echo y CPMG-8 con un campo que
+    fluctúa lentamente.
+\end{description}
+
+\subsection{Salida obtenida}
+\lstinputlisting[style=salida]{../../fuentes/salidas/21_decoherencia_spin_echo.txt}
+Usa semilla fija. Con otra semilla cambian ligeramente los números del
+conjunto de espines.
+
+\subsection{Interpretación}
+La componente transversal baja a $0.368$ en $t=T_2=40$~ms, mientras que la
+poblacional ($z$) se recupera más despacio. El desfase de un conjunto coincide con
+la fórmula (por ejemplo $0.459$ frente a $0.454$ a los 2~ms). Con eco, la señal
+a 32~ms es $0.449$ (solo la relajación natural $e^{-t/T_2}$), mientras que
+sin eco es $0.009$. Con un solo pulso, la fase del eco coincide con la inicial solo en 2 de
+los 4 casos ($0^\circ$, $180^\circ$, $270^\circ$ y $90^\circ$ para fases
+iniciales $0^\circ$ y $90^\circ$ con $\pi_x$ y $\pi_y$); con el segundo pulso
+del mismo eje es siempre la inicial. Con un campo que fluctúa lentamente, un solo spin echo no
+basta ($0.009$), pero CPMG-8 conserva $0.749$ de la señal.
+
+\subsection{Ejercicios}
+\begin{enumerate}
+  \item Cambia $T_2$ a $20$~ms y observa cómo cambia la columna ``con eco''.
+  \item Prueba CPMG con $n=2,4,16$ y compara la señal final.
+  \item ¿Qué pasa con CPMG si el ruido fluctúa muy rápido (tiempo de
+    correlación de $1$~ms)?
+\end{enumerate}
+
+\subsection{Errores comunes}
+\begin{itemize}
+  \item Creer que el eco recupera \emph{toda} la señal: solo corrige el
+    desfase por campos estáticos (o lentos); la relajación natural $T_2$ sigue.
+  \item Confundir $T_2$ con $T_2^{*}$: $T_2^{*}$ incluye la inhomogeneidad y es
+    más corto.
+\end{itemize}
+
+\input{pie}

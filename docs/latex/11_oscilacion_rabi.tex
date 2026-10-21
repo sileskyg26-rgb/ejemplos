@@ -1,0 +1,123 @@
+\def\tituloconcepto{Oscilación de Rabi}
+\input{cabecera}
+
+\section{Oscilación de Rabi: cómo un pulso cambia el estado de un qubit}
+
+\subsection{Objetivo}
+Ver cómo un pulso de radiofrecuencia resonante hace girar el estado de un qubit
+de espín, por qué $P(1)$ oscila con la duración del pulso y cómo se mide la
+frecuencia de Rabi $\omega_1$ en el laboratorio.
+
+\subsection{Conceptos previos}
+\begin{concepto}{espín, esfera de Bloch y evolución unitaria}
+Ver capítulo~10 (esfera de Bloch) y la sección~\ref{sec:prerreq}. Idea
+clave: un qubit de espín $1/2$ en un campo magnético fijo $B_0$ (eje $z$) tiene
+dos niveles de energía, $\ket0$ (espín arriba) y $\ket1$ (espín abajo).
+\end{concepto}
+
+\subsection{Fundamento teórico}
+Cuando la frecuencia de un campo de radiofrecuencia (RF) coincide con la del
+espín (\emph{resonancia}), el espín absorbe energía del campo y cambia de
+nivel. Esa es la oscilación de Rabi, y es la base del control de qubits en
+estos sistemas.
+
+\paragraph{Campo de RF y sistema rotante.} La bobina genera un campo oscilante
+$B_{\mathrm{rf}}(t)\propto\cos(2\pi\omega_{\mathrm{rf}}t+\varphi_{\mathrm{rf}})$
+a lo largo de $x$. Un campo linealmente polarizado se puede descomponer en dos
+campos circulares, de intensidad $B_1$ cada uno, que giran en sentidos opuestos; con la \emph{aproximación de onda rotante} solo se
+conserva el que gira en el mismo sentido que el espín. Si el observador gira
+junto con ese campo (\emph{sistema rotante}), el campo se vuelve estático: tiene
+intensidad $B_1$ y dirección
+$\cos\varphi_{\mathrm{rf}}\,\hat x+\sin\varphi_{\mathrm{rf}}\,\hat y$, que
+depende solo de la fase del pulso.
+
+\paragraph{Resonancia.} En el sistema rotante, el espín gira alrededor del eje
+$z$ con frecuencia $\omega_0-\omega_{\mathrm{rf}}$ (la \emph{desintonia}
+$\Delta\omega$). Si $\omega_{\mathrm{rf}}=\omega_0$ ese giro desaparece y solo
+queda el giro alrededor del campo $B_1$, a la \textbf{frecuencia de Rabi}
+$\omega_1\propto B_1$. El ángulo de giro es
+\begin{equation}
+  \theta=2\pi\,\omega_1\,t_{\mathrm{Rabi}} .
+\end{equation}
+
+\paragraph{Qué se mide.} Partiendo de $\ket0$, el espín gira alrededor de un
+eje del plano $xy$, así que oscila entre $\ket0$ y $\ket1$. Como $\theta$ es
+también el ángulo de la esfera de Bloch,
+\begin{equation}
+  P(1)=\sin^2\frac\theta2=\sin^2(\pi\,\omega_1\,t),
+\end{equation}
+y esa población oscila con frecuencia $\omega_1$. Un pulso con $\theta=\pi$ voltea
+el qubit (como la puerta $X$) y uno con $\theta=\pi/2$ lo deja en una
+superposición $50/50$. Antes de usar el sistema para calcular, hay que medir
+$\omega_1$: es un parámetro del equipo.
+
+\paragraph{Cómo se mide $\omega_1$.} Medir colapsa el estado, así que:
+\begin{enumerate}
+  \item Se prepara siempre el estado inicial $\ket0$.
+  \item Se aplica un pulso de duración $t$ y se mide muchas veces; el
+    promedio da $P(1)$.
+  \item Se repite aumentando poco a poco la duración $t$ del pulso, siempre
+    reiniciando.
+  \item Se ajusta una función seno a los datos; de ahí sale $\omega_1$.
+\end{enumerate}
+
+\paragraph{Desintonia.} Si el pulso no es resonante, el espín gira a la vez
+alrededor de $z$ (a frecuencia $\Delta\omega$) y alrededor del eje del pulso.
+Con una desintonia muy grande el giro alrededor de $z$ cancela el efecto del
+pulso, que ya no excita al qubit.
+
+\paragraph{Modelo usado en el código.} Con $\hbar=1$, en el sistema rotante,
+\begin{equation}
+  H=\frac{2\pi}{2}\Big[\Delta\omega\,\sigma_z+\omega_1\big(\cos\varphi\,\sigma_x
+  +\sin\varphi\,\sigma_y\big)\Big],\qquad U(t)=e^{-iHt}.
+\end{equation}
+Las frecuencias están en Hz y por eso aparece $2\pi$. El capítulo~12 explica
+de dónde sale $U(t)=e^{-iHt}$.
+
+\subsection{Código (completamente comentado)}
+\lstinputlisting[style=py]{../../fuentes/11_oscilacion_rabi.py}
+
+\subsection{Explicación celda por celda}
+\begin{description}
+  \item[Celda 1] Importa \texttt{expm} (exponencial de una matriz),
+    \texttt{curve\_fit} (ajuste de curvas) y define las matrices de Pauli.
+  \item[Celda 2] Define $H$ y \texttt{estado\_tras\_pulso}, que calcula
+    $U(t)\ket0$.
+  \item[Celda 3] Con pulso resonante compara $P(1)$ simulada con
+    $\sin^2(\pi\omega_1t)$ para cuatro duraciones.
+  \item[Celda 4] Muestra que la fase del pulso elige el eje: con
+    $\varphi=0$ y $\varphi=\pi/2$ un pulso $\pi/2$ deja al qubit en puntos
+    distintos del ecuador.
+  \item[Celda 5] Simula el experimento del laboratorio: 41 anchos de pulso,
+    500 mediciones cada uno (con semilla fija), y ajusta $\omega_1$.
+  \item[Celda 6] Calcula el máximo de $P(1)$ con distintas desintonías.
+  \item[Celda 7] Grafica datos, teoría y el caso desafinado.
+\end{description}
+
+\subsection{Salida obtenida}
+\lstinputlisting[style=salida]{../../fuentes/salidas/11_oscilacion_rabi.txt}
+La simulación usa semilla fija, así que el ajuste de $\omega_1$ se repite
+igual; con otra semilla cambiaría un poco.
+
+\subsection{Interpretación}
+Con $\omega_1=1000$~Hz, un pulso de $0.5$~ms da $P(1)=1$ (pulso $\pi$) y uno de
+$0.25$~ms da $0.5$ (pulso $\pi/2$). El ajuste con 500 mediciones por punto
+recupera $\omega_1\approx1002$~Hz. Con desintonía de $500$~Hz el máximo de
+$P(1)$ baja a $0.8$, y con $5000$~Hz baja a $0.038$: el pulso casi no excita.
+
+\subsection{Ejercicios}
+\begin{enumerate}
+  \item Cambia $\omega_1$ a $2000$~Hz: ¿cuánto dura ahora un pulso $\pi$?
+  \item Repite el ajuste con $50$ mediciones por punto y compara el error.
+  \item Con $\varphi=\pi/2$, ¿qué estado queda tras un pulso $\pi/2$?
+    Compruébalo y ubícalo en la esfera de Bloch.
+\end{enumerate}
+
+\subsection{Errores comunes}
+\begin{itemize}
+  \item Olvidar el $2\pi$ al pasar de Hz a radianes por segundo.
+  \item No reiniciar el estado entre mediciones: cada medición colapsa el
+    qubit, así que el experimento se rehace desde $\ket0$.
+\end{itemize}
+
+\input{pie}

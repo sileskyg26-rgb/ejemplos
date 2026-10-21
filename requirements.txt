@@ -1,0 +1,11 @@
+qiskit==2.5.0
+qiskit-aer==0.17.2
+numpy>=2.0,<3
+matplotlib>=3.8
+pylatexenc
+
+# Solo para tests/ (ejecutar los notebooks)
+pytest
+nbformat
+nbclient
+ipykernel

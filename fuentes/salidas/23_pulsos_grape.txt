@@ -1,0 +1,7 @@
+Fidelidad del pulso GRAPE (caso ideal): 0.9979
+Amplitud maxima usada: 1694 Hz (limite 5000 Hz)
+Sin robustez: fidelidad promedio = 0.9939, minima = 0.9889
+Con robustez: fidelidad promedio = 0.9927, minima = 0.9902
+En el caso ideal (sin errores) el pulso robusto da 0.9966
+sin robustez              : fidelidad promedio = 0.4130, minima = 0.0809
+robusto (errores grandes) : fidelidad promedio = 0.9520, minima = 0.8751

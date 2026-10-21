@@ -1,0 +1,19 @@
+U se reconstruye con Rz Ry Rz: True
+angulos: beta = -4.179, gamma = 0.822, delta = 0.990
+A B C = I      : True
+e^{ia} A X B X C = U: True
+Tabla de verdad (entrada q2q1q0 -> salida q2q1q0):
+  000 -> 000
+  001 -> 001
+  010 -> 010
+  011 -> 111
+  100 -> 100
+  101 -> 101
+  110 -> 110
+  111 -> 011
+AND   coincide con la tabla de verdad clasica: True
+OR    coincide con la tabla de verdad clasica: True
+NAND  coincide con la tabla de verdad clasica: True
+NOR   coincide con la tabla de verdad clasica: True
+XOR   coincide con la tabla de verdad clasica: True
+XNOR  coincide con la tabla de verdad clasica: True

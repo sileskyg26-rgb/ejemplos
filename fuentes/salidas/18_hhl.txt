@@ -1,0 +1,15 @@
+Solucion clasica x = A^-1 b = [0.4167 0.0833] (5/12, 1/12)
+Autovalores: [2. 3.]
+beta_i = <u_i|b>: [-0.7071 -0.7071]
+Solucion con autovalores (normalizada): [0.9806 0.1961]
+Solucion clasica       (normalizada): [0.9806 0.1961]
+x cuantico (normalizado): [0.9806 0.1961] | clasico: [0.9806 0.1961]
+Probabilidad de que el auxiliar valga 1: 0.7222
+Autovalores de A: [2. 3.]
+U coincide con Ry(pi/4) (salvo signos): True
+x cuantico (normalizado): [0.7887 0.6148] | clasico: [0.7887 0.6148]
+Probabilidad de que el auxiliar valga 1: 0.9186
+P(|00>) = 0.0119
+P(|01>) = 0.0694
+P(|10>) = 0.5714
+P(|11>) = 0.3472

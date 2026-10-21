@@ -1,0 +1,114 @@
+\def\tituloconcepto{VQE}
+\input{cabecera}
+
+\section{VQE: eigensolver cuántico variacional}
+
+\subsection{Objetivo}
+Calcular la energía del estado fundamental de un Hamiltoniano con un algoritmo
+híbrido: un circuito cuántico parametrizado prepara estados de prueba y un
+optimizador clásico ajusta los parámetros.
+
+\subsection{Conceptos previos}
+\begin{concepto}{valor esperado, Hamiltoniano y era NISQ}
+Ver capítulos~08 (era NISQ), 12 (Hamiltoniano) y~13 (valores esperados de Pauli).
+El \emph{valor esperado} de $H$ en el estado $\ket\psi$ es
+$\langle H\rangle=\bra\psi H\ket\psi=\Tr(H\rho)$ con $\rho=\ket\psi\bra\psi$.
+\end{concepto}
+
+\subsection{Fundamento teórico}
+Los computadores cuánticos actuales tienen ruido y pocos qubits (era NISQ, término
+de John Preskill de 2018). En ese contexto son muy usados los algoritmos
+\textbf{híbridos cuántico-clásicos}: parte del cálculo corre en un computador
+clásico y parte en uno cuántico. El VQE es uno de ellos; su tarea es calcular
+la energía aproximada del estado fundamental de un Hamiltoniano. Se aplica
+sobre todo en simulación de química cuántica (moléculas como el agua o cadenas de
+hidrógeno) y también en optimización y aprendizaje automático cuántico.
+
+\paragraph{Principio variacional.} Para cualquier estado de prueba $\ket\psi$,
+\begin{equation}
+  E_0\ \le\ \frac{\bra\psi H\ket\psi}{\langle\psi|\psi\rangle} ,
+\end{equation}
+donde $E_0$ es la energía del estado fundamental. Por eso, minimizar el valor
+esperado acerca el resultado a $E_0$.
+
+\paragraph{Los pasos del VQE.}
+\begin{enumerate}
+  \item \textbf{Hamiltoniano:} se escribe el problema como un Hamiltoniano de
+    operadores de Pauli.
+  \item \textbf{Estado de prueba:} un circuito parametrizado (rotaciones con
+    parámetro y puertas de dos qubits como CNOT o CZ) se aplica a $\ket{0\ldots0}$.
+  \item \textbf{Valor esperado:} se mide $\langle H\rangle$ en el computador
+    cuántico y se envía al clásico.
+  \item \textbf{Optimización:} un método clásico (con o sin gradiente) actualiza
+    los parámetros.
+  \item Se repiten los pasos 3 y 4 hasta converger o llegar al máximo de iteraciones.
+  \item La última iteración da el autoestado y el autovalor óptimos.
+\end{enumerate}
+
+\paragraph{Regla del desplazamiento de parámetros.} Para obtener el gradiente
+se evalúa el circuito con el parámetro movido:
+\begin{equation}
+  \frac{dE}{d\theta}=\frac{E(\theta+s)-E(\theta-s)}{2}\quad(s=\pi/2),
+  \qquad \theta\leftarrow\theta-\eta\,\frac{dE}{d\theta},
+\end{equation}
+con $\eta$ la tasa de aprendizaje. Esta forma (con $s=\pi/2$) es exacta para
+puertas de rotación $e^{-i\theta P/2}$; con un desplazamiento $\delta$ cualquiera
+se obtiene solo una aproximación.
+
+\paragraph{Cálculo de $\langle H\rangle$.} Se puede hacer con el vector de estado,
+$\bra\psi H\ket\psi=\sum_{i,j}\bar\psi_iH_{ij}\psi_j$, o con la traza,
+$\Tr(H\rho)$. Dan el mismo resultado.
+
+\paragraph{El caso del ejemplo.} El modelo de Heisenberg de dos qubits,
+$H=XX+YY+ZZ$, tiene energías $-3$ (estado fundamental, el singlete
+$(\ket{01}-\ket{10})/\sqrt2$) y $+1$ (tres veces). El circuito de prueba usa
+dos parámetros: $R_y(\theta_1)$ sobre $q_0$, una CNOT $q_0\to q_1$ y
+$R_x(\theta_2)$ sobre $q_0$.
+
+\subsection{Código (completamente comentado)}
+\lstinputlisting[style=py]{../../fuentes/19_vqe.py}
+
+\subsection{Explicación celda por celda}
+\begin{description}
+  \item[Celda 2] Define $H=XX+YY+ZZ$ y calcula sus energías exactas por
+    diagonalización, solo para comparar.
+  \item[Celda 3] Calcula $\langle H\rangle$ de un estado de prueba de las dos formas
+    y muestra que coinciden.
+  \item[Celda 4] Define el circuito de prueba y la función de energía
+    $\Tr(H\rho)$.
+  \item[Celda 5] Implementa la regla del desplazamiento y la compara con una
+    derivada numérica.
+  \item[Celda 6] El ciclo de VQE: 40 iteraciones con tasa de aprendizaje $0.3$.
+  \item[Celda 7] Gráfica de convergencia.
+\end{description}
+
+\subsection{Salida obtenida}
+\lstinputlisting[style=salida]{../../fuentes/salidas/19_vqe.txt}
+(El dibujo del circuito no se reproduce aquí.) Es determinista.
+
+\subsection{Interpretación}
+Las dos formas de calcular $\langle H\rangle$ dan $-0.2308$, y el gradiente
+por desplazamiento coincide con el numérico. Partiendo de
+$\theta=(1.3,2.0)$ con $\langle H\rangle=+0.9484$, la energía baja a $-0.51$ en 5
+iteraciones, a $-2.996$ en 10 y a $-3.0000$ en 20: el valor exacto del estado
+fundamental. Los parámetros terminan en $(-\pi/2,\ \pi)$.
+
+\subsection{Ejercicios}
+\begin{enumerate}
+  \item Cambia la tasa de aprendizaje a $0.1$ y a $1.0$. ¿Cuántas iteraciones
+    hacen falta en cada caso?
+  \item Prueba otros parámetros iniciales: ¿converge siempre a $-3$?
+  \item Cambia el Hamiltoniano a $H=ZZ$ y observa qué energía mínima se
+    obtiene.
+\end{enumerate}
+
+\subsection{Errores comunes}
+\begin{itemize}
+  \item Creer que VQE garantiza el mínimo global: el resultado depende del
+    circuito de prueba y de los parámetros iniciales, y puede quedarse en un
+    mínimo local.
+  \item Olvidar que el valor esperado se estima con muchas mediciones en un
+    equipo real; aquí se calcula exacto con el simulador.
+\end{itemize}
+
+\input{pie}

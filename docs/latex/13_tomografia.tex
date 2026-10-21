@@ -1,0 +1,119 @@
+\def\tituloconcepto{Tomografía de estados}
+\input{cabecera}
+
+\section{Tomografía de estados: reconstruir un estado a partir de mediciones}
+
+\subsection{Objetivo}
+Entender cómo se lee por completo el estado de uno o dos qubits, midiendo en
+varios ejes y reconstruyendo la matriz densidad $\rho$.
+
+\subsection{Conceptos previos}
+\begin{concepto}{esfera de Bloch, matrices de Pauli y entrelazamiento}
+Ver capítulo~10 (esfera de Bloch), capítulo~04 (medición y shots) y el
+capítulo~12 (producto tensorial y entrelazamiento). Una \emph{matriz densidad}
+$\rho$ es otra forma de describir un estado; para un estado puro es
+$\ket\psi\bra\psi$.
+\end{concepto}
+
+\subsection{Fundamento teórico}
+Al terminar un cálculo hay que leer el estado de los qubits. La \textbf{tomografía
+cuántica} es la técnica para leerlo completo.
+
+\paragraph{Un qubit.} Las coordenadas del qubit en la esfera de Bloch son
+$(a,b,c)=(\langle\sigma_x\rangle,\langle\sigma_y\rangle,\langle\sigma_z\rangle)$,
+los promedios de los momentos angulares de espín en cada eje. Medir colapsa el
+estado y solo da el resultado de un autoestado, pero la información queda en las
+probabilidades:
+\begin{equation}
+  P(0)=\frac{1+c}{2},\qquad P(1)=\frac{1-c}{2}\ \Longrightarrow\ c=P(0)-P(1).
+\end{equation}
+Repitiendo muchas veces se estima $c$. Con $(a,b,c)$ se reconstruye
+\begin{equation}
+  \rho=\frac12\big(I+a\,\sigma_x+b\,\sigma_y+c\,\sigma_z\big).
+\end{equation}
+
+\paragraph{Medir $x$ e $y$.} Algunos sistemas solo pueden medir en el eje $z$.
+Para medir $\langle\sigma_x\rangle$ y $\langle\sigma_y\rangle$ se aplican antes
+unos pulsos de observación $\pi/2$ que giran el eje que se quiere medir hasta
+$z$. El cuadro completo se obtiene solo al reunir los tres ejes
+perpendiculares (una ``vista en tres ángulos'').
+
+\paragraph{Varios qubits.} Para $n$ qubits, $\rho$ se expande en los productos
+de matrices de Pauli ($\sigma_0=I$, $\sigma_1=\sigma_x$, $\sigma_2=\sigma_y$,
+$\sigma_3=\sigma_z$). Para dos qubits:
+\begin{equation}
+  \rho=\frac14\sum_{i,j=0}^{3}c_{ij}\,\sigma_i\otimes\sigma_j,\qquad c_{00}=1 ,
+\end{equation}
+una suma de 16 términos, de los cuales $c_{00}=1$ es la normalización y hay
+que medir los otros 15. Los términos como $\sigma_x\otimes I$ son el momento
+angular de un solo qubit; los términos como $\sigma_z\otimes\sigma_z$ son la
+\emph{correlación} entre los dos. Para más qubits el principio es el mismo y solo
+aumenta el número de mediciones.
+
+\begin{nota}{Por qué no basta medir cada qubit por separado}
+Si hubiera entrelazamiento, el estado completo no se puede obtener midiendo
+cada qubit por separado y juntando los resultados, porque parte de la información
+está en las correlaciones.
+\end{nota}
+
+\begin{nota}{Diferencia con el sistema de resonancia magnética}
+En un sistema de resonancia magnética nuclear (RMN) las mediciones son sobre un
+\emph{conjunto} de moléculas y la señal medida (el \emph{FID}) trae a la vez
+información de dos ejes, por lo que bastan 6 observaciones para dos qubits. En
+este capítulo se simula un computador que mide solo en $z$: el principio
+(reconstruir $\rho$ con promedios de Pauli) es el mismo, pero se hacen más
+mediciones (el código mide cada uno de los 15 coeficientes por separado).
+\end{nota}
+
+\subsection{Código (completamente comentado)}
+\lstinputlisting[style=py]{../../fuentes/13_tomografia.py}
+
+\subsection{Explicación celda por celda}
+\begin{description}
+  \item[Celda 1] Matrices de Pauli y un simulador con semilla fija.
+  \item[Celda 3] \texttt{promedio} estima $\langle\sigma_{p_0}\otimes\sigma_{p_1}\otimes\cdots\rangle$:
+    añade los giros que llevan cada eje a $z$ (\texttt{h} para $x$;
+    \texttt{sdg} y \texttt{h} para $y$), mide y calcula el promedio con signo
+    $+1$ o $-1$ según haya un número par o impar de unos.
+  \item[Celda 4] Reconstruye $\rho$ de un qubit con $100$, $1000$ y $10\,000$
+    mediciones y calcula la fidelidad con el estado real.
+  \item[Celda 5] \texttt{tomografia\_2\_qubits} mide los 15 coeficientes
+    distintos de $c_{00}$ y arma $\rho$.
+  \item[Celda 6] Aplica la tomografía a un estado de Bell.
+  \item[Celda 7] Compara con el producto $\frac I2\otimes\frac I2$ de las
+    tomografías por separado.
+\end{description}
+
+\subsection{Salida obtenida}
+\lstinputlisting[style=salida]{../../fuentes/salidas/13_tomografia.txt}
+Se usa semilla fija, así que los números se repiten; con otra semilla los
+valores de las mediciones cambian ligeramente.
+
+\subsection{Interpretación}
+Con $100$ mediciones el módulo de $(a,b,c)$ sale $1.044$, mayor que $1$: el
+ruido estadístico produce una $\rho$ que no es un estado válido, y por eso la
+``fidelidad'' pasa de $1$. Con $10\,000$ mediciones el módulo es $0.993$ y la
+fidelidad $0.9966$. Para el estado de Bell los únicos coeficientes distintos de
+cero son $c_{xx}=1$, $c_{yy}=-1$ y $c_{zz}=1$ (más $c_{00}=1$), y la fidelidad
+con el Bell ideal es $1$. En cambio, el producto de las tomografías de cada
+qubit por separado da $I/4$, con fidelidad de solo $0.25$: las correlaciones
+eran justo lo que faltaba.
+
+\subsection{Ejercicios}
+\begin{enumerate}
+  \item Haz la tomografía del estado $\ket+$ y verifica que
+    $(a,b,c)\approx(1,0,0)$.
+  \item Haz la tomografía de dos qubits en el estado $\ket{00}$.
+    ¿Qué coeficientes son distintos de cero?
+  \item Cuenta cuántos coeficientes habría que medir para 3 qubits.
+\end{enumerate}
+
+\subsection{Errores comunes}
+\begin{itemize}
+  \item Esperar un resultado exacto con pocas mediciones: el error baja
+    como $1/\sqrt N$ (capítulo~04).
+  \item Confundir el orden de las letras: en \texttt{promedio("XZ", ...)} la
+    primera letra es el qubit 0 y la segunda el qubit 1.
+\end{itemize}
+
+\input{pie}

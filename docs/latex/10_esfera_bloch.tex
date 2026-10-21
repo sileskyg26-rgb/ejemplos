@@ -1,0 +1,120 @@
+\def\tituloconcepto{La esfera de Bloch}
+\input{cabecera}
+
+\section{La esfera de Bloch: un qubit como punto de una esfera}
+
+\subsection{Objetivo}
+Entender que todo estado de un qubit se describe con solo dos ángulos,
+$\theta$ y $\varphi$, y que por eso se puede dibujar como un punto sobre una
+esfera.
+
+\subsection{Conceptos previos}
+\begin{concepto}{amplitudes, fase y regla de Born}
+Ver capítulo~01 y la sección~\ref{sec:prerreq}. Hace falta saber que un qubit
+es $\alpha\ket0+\beta\ket1$ con $|\alpha|^2+|\beta|^2=1$, y que $|\alpha|^2$ y
+$|\beta|^2$ son las probabilidades de medir 0 y 1.
+\end{concepto}
+
+\subsection{Fundamento teórico}
+Los coeficientes de un qubit son números complejos, así que cada uno tiene un
+módulo y una fase:
+\begin{equation}
+  \ket\psi=r_1e^{i\gamma_1}\ket0+r_2e^{i\gamma_2}\ket1 .
+\end{equation}
+Para simplificar esta expresión se usan dos ideas.
+
+\begin{enumerate}
+  \item \textbf{Solo importa la fase relativa.} Multiplicar todo el estado por
+    $e^{i\gamma}$ no cambia nada observable (la \emph{fase global} no se puede
+    medir). Se puede entonces sacar $e^{i\gamma_1}$ como factor común y
+    quedarse solo con la fase relativa $\varphi=\gamma_2-\gamma_1$.
+  \item \textbf{Normalización.} Como $r_1^2+r_2^2=1$ se pueden escribir
+    $r_1=\cos\frac\theta2$ y $r_2=\sin\frac\theta2$.
+\end{enumerate}
+El resultado es
+\begin{equation}
+  \ket\psi=\cos\tfrac\theta2\,\ket0+e^{i\varphi}\sin\tfrac\theta2\,\ket1 .
+\end{equation}
+Cada qubit queda determinado por dos ángulos, y por tanto es un punto de una
+esfera de radio 1: la \textbf{esfera de Bloch}, propuesta por Felix Bloch en
+1946. El polo norte es $\ket0$, el polo sur es $\ket1$, el ángulo $\theta$ se
+mide desde el eje $z$ y el ángulo $\varphi$ gira alrededor de él. En un qubit
+físico de espín, $\theta$ es el ángulo entre el momento angular de espín y el
+eje $z$, y $\varphi$ es la fase del espín.
+
+Las coordenadas del punto son los promedios de las matrices de Pauli:
+\begin{equation}
+  (x,y,z)=\big(\langle X\rangle,\langle Y\rangle,\langle Z\rangle\big)
+  =(\sin\theta\cos\varphi,\ \sin\theta\sin\varphi,\ \cos\theta).
+\end{equation}
+Este mismo resultado se usa en el capítulo~13 (tomografía).
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Estado & Punto $(x,y,z)$ & Dónde está\\
+\midrule
+$\ket0$ & $(0,0,+1)$ & polo norte\\
+$\ket1$ & $(0,0,-1)$ & polo sur\\
+$\ket+=(\ket0+\ket1)/\sqrt2$ & $(+1,0,0)$ & ecuador\\
+$\ket-=(\ket0-\ket1)/\sqrt2$ & $(-1,0,0)$ & ecuador\\
+$(\ket0+i\ket1)/\sqrt2$ & $(0,+1,0)$ & ecuador\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Ángulo y probabilidades.} Las probabilidades dependen solo de
+$\theta$: $P(0)=\cos^2\frac\theta2$ y $P(1)=\sin^2\frac\theta2$. Cambiar
+$\varphi$ mueve el punto alrededor del eje $z$ sin tocar $z$, así que no cambia
+las probabilidades de esta medición; la fase relativa solo se nota después,
+por interferencia (capítulo~05a).
+
+\subsection{Código (completamente comentado)}
+\lstinputlisting[style=py]{../../fuentes/10_esfera_bloch.py}
+
+\subsection{Explicación celda por celda}
+\begin{description}
+  \item[Celda 1] \texttt{Pauli} y \texttt{expectation\_value} calculan
+    $\langle X\rangle,\langle Y\rangle,\langle Z\rangle$; con ellos
+    \texttt{vector\_bloch} da el punto de la esfera.
+  \item[Celda 2] Crea un qubit con $\theta=\pi/3$ y $\varphi=\pi/4$ a partir de
+    la fórmula del capítulo.
+  \item[Celda 3] Multiplica el estado por $e^{i\gamma}$ y comprueba que el
+    punto es idéntico.
+  \item[Celda 4] Calcula el punto de cinco estados especiales.
+  \item[Celda 5] Compara el punto calculado con la fórmula con $\theta$ y
+    $\varphi$.
+  \item[Celda 6] Cambia $\varphi$ y muestra que $z$ y $P(1)$ no cambian.
+  \item[Celda 7] Dibuja la esfera con \texttt{plot\_bloch\_multivector}.
+\end{description}
+
+\subsection{Salida obtenida}
+\lstinputlisting[style=salida]{../../fuentes/salidas/10_esfera_bloch.txt}
+La salida es determinista (no hay medición).
+
+\subsection{Interpretación}
+El punto calculado coincide con la fórmula, con o sin fase global. Al pasar
+$\varphi$ de $0$ a $\pi/2$ y a $\pi$, el punto gira de $(0.866,0,0.5)$ a
+$(0,0.866,0.5)$ y a $(-0.866,0,0.5)$, pero $P(1)=0.25$ no cambia.
+
+\subsection{Ejercicios}
+\begin{enumerate}
+  \item ¿Qué $\theta$ da $P(1)=0.9$? Compruébalo con el código.
+  \item Calcula a mano el punto de $\ket{-i}=(\ket0-i\ket1)/\sqrt2$ y
+    verifícalo con \texttt{Statevector.from\_label("l")}.
+  \item ¿En qué lugar de la esfera quedan dos estados que solo difieren en una
+    fase global?
+\end{enumerate}
+
+\subsection{Errores comunes}
+\begin{itemize}
+  \item Confundir $\theta$ con $\theta/2$: en la fórmula del estado aparece
+    $\cos\frac\theta2$, pero el ángulo que se mide sobre la esfera es
+    $\theta$. Por eso $\ket0$ y $\ket1$, que son ortogonales, quedan en polos
+    opuestos (a $180^\circ$).
+  \item La esfera solo sirve para \emph{un} qubit. Un estado entrelazado de
+    varios qubits no se puede separar en puntos de esferas (capítulos~12
+    y~13).
+\end{itemize}
+
+\input{pie}

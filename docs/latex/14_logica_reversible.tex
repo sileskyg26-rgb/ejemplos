@@ -1,0 +1,108 @@
+\def\tituloconcepto{Puertas universales y lógica reversible}
+\input{cabecera}
+
+\section{Puertas universales y lógica clásica reversible}
+
+\subsection{Objetivo}
+Ver que toda puerta de un qubit se arma con rotaciones alrededor de $z$ y de $y$,
+cómo se construye su versión controlada y cómo la puerta Toffoli permite
+hacer cálculos de lógica clásica (AND, OR, XOR\ldots) con un computador cuántico.
+
+\subsection{Conceptos previos}
+\begin{concepto}{rotaciones y puertas controladas}
+Ver capítulo~12 (rotaciones $R_y$ y $R_z$) y la sección~\ref{sec:prerreq}
+(CNOT). Una puerta \emph{controlada} aplica una operación al qubit objetivo
+solo si el qubit de control vale $\ket1$.
+\end{concepto}
+
+\subsection{Fundamento teórico}
+Un algoritmo cuántico es un circuito: puertas conectadas en un orden
+determinado. Este capítulo muestra que con puertas de uno, dos y tres qubits se
+puede armar cualquier operación.
+
+\paragraph{Puerta universal de un qubit.} Toda puerta de un qubit es una matriz
+unitaria $2\times2$ y se puede escribir como una rotación alrededor de $z$,
+otra alrededor de $y$ y otra alrededor de $z$, más una fase global:
+\begin{equation}
+  U=e^{i\alpha}R_z(\beta)\,R_y(\gamma)\,R_z(\delta),
+\end{equation}
+con $R_z(\theta)=e^{-i\theta Z/2}$ y $R_y(\theta)=e^{-i\theta Y/2}$. Los ángulos
+$\beta,\gamma,\delta$ son los de las rotaciones sobre la esfera de Bloch.
+
+\paragraph{Forma $U=e^{i\alpha}AXBXC$.} Se puede escribir $U$ con tres matrices
+unitarias $A,B,C$ que cumplen $ABC=I$:
+\begin{equation}
+  A=R_z(\beta)R_y(\tfrac\gamma2),\quad
+  B=R_y(-\tfrac\gamma2)R_z(-\tfrac{\delta+\beta}2),\quad
+  C=R_z(\tfrac{\delta-\beta}2).
+\end{equation}
+Como $XR_y(\theta)X=R_y(-\theta)$ y $XR_z(\theta)X=R_z(-\theta)$, se obtiene
+$e^{i\alpha}AXBXC=U$. Esto sirve para la puerta controlada: si el control vale
+$\ket0$ las $X$ no actúan y se aplica $ABC=I$ (no pasa nada); si vale
+$\ket1$ se aplica $AXBXC$, que es $U$ (salvo la fase $e^{i\alpha}$, que se
+agrega con una puerta de fase en el control). Así, una puerta controlada
+se arma con puertas de uno y dos qubits. Con $n$ controles se obtiene la puerta
+$C^n(U)$, que aplica $U$ solo si todos valen $\ket1$.
+
+\paragraph{Toffoli.} La puerta Toffoli es la $C^2(X)$: tiene dos qubits de control
+y uno objetivo, y lo invierte solo cuando ambos controles valen $\ket1$.
+
+\paragraph{Lógica clásica con puertas cuánticas.} Toda puerta lógica clásica se
+puede convertir en una puerta cuántica reversible hecha con $X$ (NOT), CNOT
+y Toffoli. Con las entradas $A$, $B$ y la salida $C$:
+\begin{itemize}
+  \item \textbf{AND:} Toffoli con $A,B$ de controles y $C$ (en $\ket0$) como
+    objetivo: $C$ pasa a $\ket1$ solo si $A=B=1$.
+  \item \textbf{OR:} el objetivo $C$ empieza en $\ket1$; se aplica $X$ a $A$
+    y $B$, luego la Toffoli, y de nuevo $X$ a $A$ y $B$. El objetivo pasa a
+    $\ket0$ solo si $A=B=0$.
+  \item \textbf{NAND, NOR, XOR\ldots:} se arman con las mismas piezas (en este
+    ejemplo, NAND y NOR añaden una $X$ a la salida; XOR son dos CNOT hacia $C$).
+\end{itemize}
+
+\subsection{Código (completamente comentado)}
+\lstinputlisting[style=py]{../../fuentes/14_logica_reversible.py}
+
+\subsection{Explicación celda por celda}
+\begin{description}
+  \item[Celda 2] Toma una unitaria al azar, calcula sus ángulos $\beta,\gamma,\delta$
+    con \texttt{OneQubitEulerDecomposer} y comprueba que se reconstruye con
+    $R_zR_yR_z$.
+  \item[Celda 3] Construye $A,B,C$ con esos ángulos y verifica $ABC=I$ y
+    $e^{i\alpha}AXBXC=U$.
+  \item[Celda 4] Imprime la tabla de verdad de la Toffoli.
+  \item[Celda 5] Define el circuito de cada puerta lógica.
+  \item[Celda 6] Compara cada circuito con la tabla de verdad clásica, para las
+    cuatro combinaciones de $A$ y $B$.
+\end{description}
+
+\subsection{Salida obtenida}
+\lstinputlisting[style=salida]{../../fuentes/salidas/14_logica_reversible.txt}
+Es determinista. Los ángulos dependen de la unitaria aleatoria elegida, que usa
+semilla fija.
+
+\subsection{Interpretación}
+Las dos descomposiciones se verifican (\texttt{True}). En la Toffoli, la cadena
+se lee como $q_2q_1q_0$: solo cambian $011\to111$ y $111\to011$, es decir, el
+objetivo $q_2$ se invierte cuando $q_0=q_1=1$. Las seis puertas lógicas
+coinciden con su tabla de verdad clásica.
+
+\subsection{Ejercicios}
+\begin{enumerate}
+  \item Cambia la unitaria aleatoria (otra \texttt{seed}) y verifica de nuevo las
+    dos descomposiciones.
+  \item Construye una puerta lógica con tres entradas, por ejemplo $C=A\wedge B\wedge D$
+    (necesita una puerta con tres controles).
+  \item ¿Por qué el circuito OR necesita que el objetivo empiece en $\ket1$?
+\end{enumerate}
+
+\subsection{Errores comunes}
+\begin{itemize}
+  \item Olvidar el orden de bits de Qiskit: la cadena \texttt{'011'} es
+    $q_2=0,\,q_1=1,\,q_0=1$.
+  \item Pensar que la puerta lógica clásica se aplica con una sola entrada: en
+    la versión reversible las entradas se conservan (en $A$ y $B$) y la salida
+    se escribe en un qubit aparte.
+\end{itemize}
+
+\input{pie}

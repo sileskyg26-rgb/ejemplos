@@ -1,0 +1,88 @@
+\def\tituloconcepto{Algoritmo de Grover}
+\input{cabecera}
+
+\section{Algoritmo de Grover: búsqueda cuadrática}
+
+\subsection{Objetivo}
+Implementar Grover para $N=8$ elementos y comparar el número de consultas con
+la búsqueda clásica, dejando claro que la ventaja es \emph{cuadrática}, no
+exponencial.
+
+\subsection{Conceptos previos}
+\begin{concepto}{oráculo, reflexión y complejidad de consultas}
+\begin{itemize}
+  \item \textbf{Oráculo:} una caja negra $O$ que reconoce la solución. Aquí
+    $O\ket x=-\ket x$ si $x$ es el elemento marcado y $O\ket x=\ket x$ si no.
+  \item \textbf{Complejidad de consultas:} se cuenta cuántas veces se usa el
+    oráculo, no el tiempo total. Clásico: $O(N)$; Grover: $O(\sqrt N)$.
+  \item \textbf{Interferencia} (capítulo~05a): Grover amplifica la amplitud de
+    la respuesta correcta.
+\end{itemize}
+\end{concepto}
+
+\subsection{Fundamento teórico}
+Se parte de la superposición uniforme
+$\ket s=H^{\otimes n}\ket{0}^{\otimes n}=\tfrac1{\sqrt N}\sum_x\ket x$ con
+$N=2^n$. Cada iteración aplica $G=D\,O$, donde $D=2\ket s\bra s-I$
+(``difusión'': reflexión respecto al promedio de las amplitudes). Geométricamente
+$G$ gira el estado, en el plano generado por $\ket s$ y la solución $\ket w$,
+un ángulo $2\theta$ con
+\begin{equation}
+  \sin\theta=\frac1{\sqrt N}.
+\end{equation}
+Tras $k$ iteraciones, la probabilidad de medir la solución es
+\begin{equation}
+  P_k=\sin^2\!\big((2k+1)\theta\big),\qquad
+  k_{\text{opt}}\approx\frac\pi4\sqrt N .
+\end{equation}
+Para $N=8$: $\theta=\arcsin(1/\sqrt8)\approx0.3614$ y
+$k=\lfloor\tfrac\pi4\sqrt8\rfloor=2$, de donde
+$P_2=\sin^2(5\theta)\approx0.945$.
+
+\paragraph{Contraste.} Clásicamente, buscar un elemento entre $N$ sin
+estructura requiere $\sim N/2$ consultas en promedio; Grover usa
+$\sim\tfrac\pi4\sqrt N$ (mejora cuadrática, que se sabe óptima para este
+problema). Esto es muy distinto de Shor (factorización), cuya ventaja sobre
+los mejores algoritmos clásicos conocidos es \emph{exponencial}.
+
+\paragraph{Oráculo en el código.} Para marcar $\ket{101}$ se aplica $X$ a los
+qubits donde esa cadena tiene un $0$ (convirtiéndola en $\ket{111}$), luego un
+$CCZ$ (hecho como $H$--Toffoli--$H$ en el último qubit), y se deshacen las $X$.
+El $CCZ$ solo cambia el signo cuando los tres qubits valen $1$.
+
+\subsection{Código (completamente comentado)}
+\lstinputlisting[style=py]{../../fuentes/06_grover_vs_clasico.py}
+
+\subsection{Explicación celda por celda}
+\begin{description}
+  \item[Celda 2] Construye el oráculo. \texttt{reversed(marcado)} se usa
+    porque Qiskit numera el qubit $0$ a la derecha. \texttt{mcx} es una puerta
+    X con varios controles.
+  \item[Celda 3] \texttt{grover\_operator} arma $G$ a partir del oráculo.
+    Se calcula $k_{\text{opt}}$, se aplica $H$ a todos y se repite $G$
+    $k$ veces. \texttt{Statevector} da la probabilidad exacta de
+    \texttt{"101"}.
+  \item[Celda 4] Tabla comparativa de consultas: la ventaja crece con $N$ pero
+    solo como raíz.
+\end{description}
+
+\subsection{Salida obtenida}
+\lstinputlisting[style=salida]{../../fuentes/salidas/06_grover_vs_clasico.txt}
+Coincide con la teoría: $P_2\approx0.945$.
+
+\subsection{Interpretación}
+Con $N=10^{12}$ Grover necesita unas $7.9\times10^5$ consultas frente a
+$5\times10^{11}$: una mejora enorme, pero cuadrática. Además cada consulta
+cuántica puede ser mucho más cara que una clásica, y el oráculo debe
+construirse como un circuito; por eso la ventaja práctica depende del
+problema y del hardware.
+
+\subsection{Ejercicios}
+\begin{enumerate}
+  \item Cambie \texttt{marcado} a \texttt{"010"} y verifique el resultado.
+  \item Use 1 y 3 iteraciones en lugar de 2: ¿qué pasa con $P_k$? (Pista:
+    es una función periódica de $k$; ``pasarse'' empeora el resultado.)
+  \item Extienda a $n=4$ y calcule el $k_{\text{opt}}$.
+\end{enumerate}
+
+\input{pie}

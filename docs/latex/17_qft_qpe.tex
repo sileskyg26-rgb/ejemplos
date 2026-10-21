@@ -1,0 +1,113 @@
+\def\tituloconcepto{QFT y estimación de fase}
+\input{cabecera}
+
+\section{Transformada de Fourier cuántica y estimación de fase}
+
+\subsection{Objetivo}
+Construir la transformada de Fourier cuántica (QFT) con un circuito y usarla
+para estimar la fase de un autovalor (estimación de fase, QPE).
+
+\subsection{Conceptos previos}
+\begin{concepto}{fases, puertas controladas y números binarios}
+Ver capítulos~05a (fases e interferencia) y~14 (puertas controladas).
+Una fase se puede escribir como una fracción binaria:
+$0.\varphi_1\varphi_2\ldots\varphi_m=\varphi_1/2+\varphi_2/4+\cdots+\varphi_m/2^m$.
+Por ejemplo $0.75=0.11_2$ y $1/4=0.01_2$.
+\end{concepto}
+
+\subsection{Fundamento teórico}
+\paragraph{QFT.} La QFT es un componente central de muchos algoritmos (Shor y la
+estimación de fase, entre ellos). Es la versión cuántica de la transformada de
+Fourier discreta (DFT). Con $N=2^n$ estados de la base, lleva
+\begin{equation}
+  \ket j\ \longmapsto\ \frac1{\sqrt N}\sum_{k=0}^{N-1}e^{2\pi i\,jk/N}\ket k ,
+\end{equation}
+una matriz unitaria con entradas $U[k,j]=e^{2\pi ijk/N}/\sqrt N$. Aunque la
+fórmula se parece a la de la DFT, el significado es distinto: la DFT transforma
+una función discreta en el dominio del tiempo y la QFT transforma un estado
+cuántico en otro.
+
+\paragraph{El circuito.} Escribiendo $j=j_1j_2\ldots j_n$ en binario, la QFT se
+puede reescribir como un producto de qubits:
+\begin{equation}
+  \ket j\mapsto\frac1{2^{n/2}}\big(\ket0+e^{2\pi i\,0.j_n}\ket1\big)
+  \big(\ket0+e^{2\pi i\,0.j_{n-1}j_n}\ket1\big)\cdots
+  \big(\ket0+e^{2\pi i\,0.j_1j_2\ldots j_n}\ket1\big).
+\end{equation}
+Esto da un circuito con tres tipos de pieza:
+\begin{enumerate}
+  \item una Hadamard en cada qubit;
+  \item fases controladas $CR_k$, que aplican la fase $e^{2\pi i/2^k}$ a $\ket1$
+    ($CR_2$ es la puerta $S$ controlada) y trasladan la información de los
+    demás bits a la fase;
+  \item al final, puertas SWAP que invierten el orden de los qubits.
+\end{enumerate}
+El número de puertas crece como $O(n^2)$, es decir, $O((\log N)^2)$ para $N$
+estados.
+
+\paragraph{QPE.} Dada una unitaria $U$ y un autovector $\ket\psi$ con
+$U\ket\psi=e^{2\pi i\varphi}\ket\psi$, la estimación de fase calcula $\varphi$.
+La QFT pasa información del estado a la fase; la QPE pasa información de la
+fase al estado. Usa dos registros: el primero con $m$ qubits (da una precisión de
+$m$ bits) y el segundo, inicializado en el autovector $\ket\psi$. Pasos:
+\begin{enumerate}
+  \item Primer registro en $\ket0^{\otimes m}$ y segundo en $\ket\psi$.
+  \item Hadamard en cada qubit del primer registro.
+  \item Puertas $U^{2^k}$ controladas por el qubit $k$ del primer registro.
+    Cada una deja una fase $e^{2\pi i\varphi2^k}$ en $\ket1$.
+  \item QFT inversa sobre el primer registro.
+  \item Se mide el primer registro: sale el número binario $\varphi_1\varphi_2\ldots\varphi_m$.
+\end{enumerate}
+Por ejemplo, la puerta $S$ tiene autovector $\ket1$ con autovalor
+$i=e^{2\pi i\cdot1/4}$, así que $\varphi=1/4=0.01_2$.
+
+\subsection{Código (completamente comentado)}
+\lstinputlisting[style=py]{../../fuentes/17_qft_qpe.py}
+
+\subsection{Explicación celda por celda}
+\begin{description}
+  \item[Celda 2] Construye la matriz de la QFT y comprueba que es unitaria.
+  \item[Celda 3] Construye el circuito (Hadamard, fases controladas y SWAP) y
+    comprueba que su matriz es igual a la de la QFT para $n=2,3,4$.
+  \item[Celda 4] Aplica la QFT de dos qubits a cada estado de la base y muestra
+    las fases de las cuatro amplitudes.
+  \item[Celda 5] Define la QPE: Hadamard, fases controladas con
+    $2\pi\varphi2^k$, QFT inversa y medición.
+  \item[Celda 6] Prueba fases exactas: puertas $S$ ($1/4$), $T$ ($1/8$) y $Z$
+    ($1/2$).
+  \item[Celda 7] Prueba $\varphi=1/3$, que no se escribe exactamente con pocos
+    bits, con $m=2,4,6$.
+\end{description}
+
+\subsection{Salida obtenida}
+\lstinputlisting[style=salida]{../../fuentes/salidas/17_qft_qpe.txt}
+(El dibujo del circuito no se reproduce aquí.) Las cuentas de la QPE dependen
+del azar de las mediciones; el resultado más probable es estable.
+
+\subsection{Interpretación}
+El circuito coincide con la matriz de la QFT. Con 2 qubits, cada entrada da
+cuatro amplitudes del mismo módulo y fases que son múltiplos de $90^\circ$; por
+ejemplo $\ket{01}\to[0,90,180,270]$. Con las fases exactas, la QPE da el
+resultado correcto con probabilidad~1: $S\to01$ ($0.25$), $T\to001$ ($0.125$)
+y $Z\to10$ ($0.5$). Para $\varphi=1/3$, el resultado más probable se acerca
+cada vez más: el error baja de $0.083$ ($m=2$) a $0.021$ ($m=4$) y a $0.005$
+($m=6$), con probabilidad cercana a $0.69$.
+
+\subsection{Ejercicios}
+\begin{enumerate}
+  \item Comprueba la QPE con $\varphi=3/8$ y $m=3$. ¿Qué cadena esperas?
+  \item ¿Qué cadena da la QPE para la puerta $Z$ con $m=3$ bits? Predícelo
+    y compruébalo.
+  \item Cuenta las puertas del circuito de la QFT para $n=5$ y compara con
+    $n^2$.
+\end{enumerate}
+
+\subsection{Errores comunes}
+\begin{itemize}
+  \item Olvidar los SWAP finales: sin ellos el circuito da la QFT con los
+    qubits en orden inverso.
+  \item Esperar un resultado exacto cuando la fase no cabe en $m$ bits:
+    la QPE da el valor más cercano, con alta probabilidad pero no exacta.
+\end{itemize}
+
+\input{pie}

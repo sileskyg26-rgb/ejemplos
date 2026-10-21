@@ -1,0 +1,125 @@
+\def\tituloconcepto{QAOA}
+\input{cabecera}
+
+\section{QAOA: algoritmo de optimización cuántica aproximada}
+
+\subsection{Objetivo}
+Resolver el problema Max-Cut con un circuito variacional de capas alternadas de
+costo y de mezcla, y comprobar cómo influye el número de capas $p$.
+
+\subsection{Conceptos previos}
+\begin{concepto}{VQE y rotaciones $ZZ$}
+Ver capítulo~19 (VQE, regla del desplazamiento) y capítulo~12 (rotaciones y
+acoplamiento $\sigma_z\otimes\sigma_z$). QAOA usa la misma idea híbrida: un
+circuito parametrizado y un optimizador clásico.
+\end{concepto}
+
+\subsection{Fundamento teórico}
+QAOA fue propuesto por Farhi, Goldstone y Gutmann en 2014. Es un algoritmo
+híbrido cuántico-clásico para problemas de optimización combinatoria (como el
+viajante TSP, la coloración de grafos o Max-Cut), aplicables a logística,
+planificación de producción o diseño de circuitos.
+
+\paragraph{Algoritmo adiabático cuántico (QAA).} Si un sistema empieza en el
+estado fundamental de un Hamiltoniano $H_I$ y $H(t)$ cambia lo bastante despacio
+hasta $H_F$, el sistema permanece en el estado fundamental. Se elige $H_I$ con
+un estado fundamental fácil de preparar y $H_F$ de modo que su estado
+fundamental codifique la solución. Con $H(t)$ pasando de $H_I$ en $t=0$ a $H_F$
+en $t=T$, la evolución se simula con la fórmula de Trotter--Suzuki, alternando pasos pequeños de $H_I$ y de
+$H_F$. En la práctica, el ruido y los límites físicos impiden las evoluciones
+largas que pide la adiabaticidad.
+
+\paragraph{QAOA.} Adopta la misma idea con evoluciones más cortas y rápidas, y
+busca una solución \emph{aproximada} optimizando parámetros. Los pasos son:
+\begin{enumerate}
+  \item \textbf{Hamiltonianos:} se define un Hamiltoniano de costo $H_C$ (el
+    estado de mayor energía codifica la solución) y uno de mezcla $H_M$ que no
+    conmuta con $H_C$ (aquí, $H_M=\sum_iX_i$).
+  \item \textbf{Estado inicial:} $\ket s=\ket+^{\otimes n}$, el estado de mayor
+    energía de $H_M$.
+  \item \textbf{Circuito:} la capa de costo $U_C(\gamma)=e^{-i\gamma H_C}$ y la
+    de mezcla $U_M(\beta)=e^{-i\beta H_M}$ (que es $R_x(2\beta)$ en cada qubit).
+  \item \textbf{Evolución:} con $p$ capas, $\gamma=(\gamma_1,\ldots,\gamma_p)$ y
+    $\beta=(\beta_1,\ldots,\beta_p)$:
+    \begin{equation}
+      \ket{\psi_p(\gamma,\beta)}=e^{-i\beta_pH_M}e^{-i\gamma_pH_C}\cdots
+      e^{-i\beta_1H_M}e^{-i\gamma_1H_C}\ket+^{\otimes n}.
+    \end{equation}
+  \item \textbf{Valor esperado:}
+    $E(\gamma,\beta)=\langle\psi_p|H_C|\psi_p\rangle$.
+  \item \textbf{Optimización:} un método clásico actualiza $\gamma$ y $\beta$
+    para \emph{maximizar} $E$.
+\end{enumerate}
+
+\paragraph{Max-Cut.} Dado un grafo $G=(V,E)$ con $n$ vértices, se reparten los
+vértices en dos grupos para \emph{maximizar} el número de aristas entre grupos
+distintos. Si $x_i\in\{0,1\}$ dice a qué grupo (por ejemplo, a qué día) pertenece
+el vértice $i$, la función a maximizar es
+\begin{equation}
+  L(x)=\sum_{(u,v)\in E}\big(x_u+x_v-2x_ux_v\big).
+\end{equation}
+Para dos lugares turísticos unidos por una arista hay $2^2=4$ formas de
+repartirlos: $00$ y $11$ cortan $0$ aristas y $01$ y $10$ cortan $1$. Para pasar
+a un Hamiltoniano se sustituye $x_i\to\frac{I-Z_i}2$ (vale $0$ en $\ket0$ y $1$ en
+$\ket1$) y queda
+\begin{equation}
+  H_C=\sum_{(u,v)\in E}\frac{1-Z_uZ_v}{2}.
+\end{equation}
+
+\paragraph{Cómo se hace $e^{-i\gamma Z_uZ_v}$.} Con una CNOT, una rotación
+$R_z$ sobre el segundo qubit y otra CNOT. En el ejemplo, la capa de costo con
+ángulo de puerta $a=-\gamma$ coincide con $e^{-i\gamma H_C}$ salvo una fase
+global.
+
+\subsection{Código (completamente comentado)}
+\lstinputlisting[style=py]{../../fuentes/20_qaoa.py}
+
+\subsection{Explicación celda por celda}
+\begin{description}
+  \item[Celda 2] Lista las cuatro formas de repartir los dos lugares y cuántas
+    aristas corta cada una.
+  \item[Celda 3] Construye $H_C$ y comprueba que su valor máximo es $1$.
+  \item[Celda 4] Arma el circuito QAOA y verifica que la capa de costo es
+    $e^{-i\gamma H_C}$.
+  \item[Celda 5] Calcula $\langle H_C\rangle$ y su gradiente. Como un mismo
+    parámetro aparece en varias puertas (la mezcla usa el mismo $\beta$ en todos
+    los qubits), la regla del desplazamiento se aplica a cada puerta por separado y se suman
+    las contribuciones. Se compara con la derivada numérica.
+  \item[Celda 6] Ascenso por gradiente con $p=1$.
+  \item[Celda 7] Muestra las probabilidades de cada cadena con los parámetros
+    óptimos.
+  \item[Celda 8] Repite con $p=1,2,3$, como pide la práctica.
+\end{description}
+
+\subsection{Salida obtenida}
+\lstinputlisting[style=salida]{../../fuentes/salidas/20_qaoa.txt}
+(El dibujo del circuito no se reproduce aquí.) Es determinista (la
+optimización usa una semilla fija).
+
+\subsection{Interpretación}
+El gradiente por desplazamiento coincide con el numérico
+($-0.44849$ y $0.08848$). Con $p=1$ el valor esperado llega a $1.0000$ (el
+máximo): la probabilidad se reparte entre $01$ y $10$ ($0.5$ cada una), que son
+las dos formas de cortar la arista, y $00$ y $11$ quedan en $0$. Con $p=2$ y
+$p=3$ también se obtiene $1.0000$: en este grafo tan pequeño, una sola capa
+alcanza.
+
+\subsection{Ejercicios}
+\begin{enumerate}
+  \item Cambia el grafo a un triángulo (aristas $(0,1),(1,2),(0,2)$, $n=3$).
+    ¿Cuál es el valor máximo de $H_C$? ¿Llega QAOA con $p=1$?
+  \item Cambia la tasa de aprendizaje y el número de iteraciones y mira cómo
+    cambia el resultado.
+  \item Prueba otras semillas para los parámetros iniciales con $p=1$: ¿llega
+    siempre a $1$?
+\end{enumerate}
+
+\subsection{Errores comunes}
+\begin{itemize}
+  \item Confundir el signo: QAOA aquí \emph{maximiza} $\langle H_C\rangle$ (el
+    número de aristas cortadas), mientras que VQE minimiza una energía.
+  \item Olvidar que los parámetros compartidos necesitan sumar las
+    contribuciones de cada puerta al calcular el gradiente.
+\end{itemize}
+
+\input{pie}

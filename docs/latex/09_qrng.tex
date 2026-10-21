@@ -1,0 +1,71 @@
+\def\tituloconcepto{Generador de números aleatorios cuántico}
+\input{cabecera}
+
+\section{Generador de números aleatorios cuántico (QRNG)}
+
+\subsection{Objetivo}
+Generar bits aleatorios midiendo qubits en superposición y usarlos para
+elegir la jugada de un bot de Tic-Tac-Toe, señalando las limitaciones de la
+simulación.
+
+\subsection{Conceptos previos}
+\begin{concepto}{aleatoriedad, uniformidad y módulo}
+\begin{itemize}
+  \item \textbf{Aleatoriedad pseudoaleatoria vs.\ física:} un PRNG es un
+    algoritmo determinista a partir de una semilla; una fuente física
+    (p.\,ej.\ la medición de un qubit real) no lo es.
+  \item \textbf{Uniformidad:} todos los resultados posibles tienen igual
+    probabilidad.
+  \item Medición y regla de Born (capítulo~04).
+\end{itemize}
+\end{concepto}
+
+\subsection{Fundamento teórico}
+$H\ket0=\tfrac1{\sqrt2}(\ket0+\ket1)$: medir da $0$ o $1$ con probabilidad
+$\tfrac12$. Con $n$ qubits en paralelo se obtienen $n$ bits independientes
+$\to$ un entero uniforme en $\{0,\dots,2^n-1\}$.
+
+\paragraph{Sesgo por módulo.} Para elegir entre $m$ opciones con $x\bmod m$ la
+distribución solo es uniforme si $m$ divide a $2^n$. En el código se eligen 4
+bits ($16$ valores) para $m=5$ casillas; $16=3\cdot5+1$, así que la casilla
+$0$ sale con probabilidad $4/16$ y las demás con $3/16$. Una solución es el
+\emph{muestreo por rechazo}: descartar los valores $\ge 15$ y repetir.
+
+\paragraph{La advertencia importante.} \texttt{AerSimulator} calcula las
+probabilidades y luego toma muestras con un generador pseudoaleatorio. Por lo
+tanto, \textbf{en simulación los bits no son aleatoriedad física}. Solo
+ejecutando en hardware real la fuente es física (aun así, el ruido del equipo
+puede introducir sesgo y se recomienda post-procesamiento/extractores).
+
+\subsection{Código (completamente comentado)}
+\lstinputlisting[style=py]{../../fuentes/09_qrng.py}
+
+\subsection{Explicación celda por celda}
+\begin{description}
+  \item[Celda 2] La función arma un circuito con $n$ qubits, aplica $H$ a todos
+    y mide. \texttt{shots=1, memory=True} devuelve la cadena de esa única
+    ejecución.
+  \item[Celda 3] Convierte los bits en un entero (\texttt{int(bits, 2)}) y
+    elige una casilla libre del tablero con el operador módulo.
+\end{description}
+
+\subsection{Salida obtenida}
+\lstinputlisting[style=salida]{../../fuentes/salidas/09_qrng.txt}
+Distinta en cada ejecución (es el punto del generador).
+
+\subsection{Interpretación}
+Se ilustra el vínculo entre el concepto (medición) y una aplicación
+concreta (un bot que elige jugadas). El ejemplo también expone una buena
+práctica de ingeniería: validar que el mapeo de bits a opciones no introduzca
+sesgo.
+
+\subsection{Ejercicios}
+\begin{enumerate}
+  \item Implemente el muestreo por rechazo y verifique con 10\,000 jugadas que
+    las 5 casillas tienen frecuencia $\approx20\%$.
+  \item Mida con una prueba de $\chi^2$ la uniformidad de 10\,000 bits.
+  \item Cambie el simulador por un backend real (sin ejecutar en la charla) y
+    compare.
+\end{enumerate}
+
+\input{pie}

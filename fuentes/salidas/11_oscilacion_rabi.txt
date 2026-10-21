@@ -1,0 +1,10 @@
+t = 0.25 ms -> theta =  1.57 rad | P(1) simulada = 0.500 | sin^2(pi w1 t) = 0.500
+t = 0.50 ms -> theta =  3.14 rad | P(1) simulada = 1.000 | sin^2(pi w1 t) = 1.000
+t = 0.75 ms -> theta =  4.71 rad | P(1) simulada = 0.500 | sin^2(pi w1 t) = 0.500
+t = 1.00 ms -> theta =  6.28 rad | P(1) simulada = 0.000 | sin^2(pi w1 t) = 0.000
+phi = 0.00 (eje x) -> (x, y, z) = (+0.00, -1.00, +0.00)
+phi = 1.57 (eje y) -> (x, y, z) = (+1.00, -0.00, +0.00)
+w1 real = 1000 Hz | w1 ajustada con 500 shots = 1002.4 Hz
+desintonia =      0 Hz -> maximo de P(1) = 1.000
+desintonia =    500 Hz -> maximo de P(1) = 0.800
+desintonia =   5000 Hz -> maximo de P(1) = 0.038

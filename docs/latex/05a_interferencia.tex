@@ -1,0 +1,72 @@
+\def\tituloconcepto{Interferencia cuántica}
+\input{cabecera}
+
+\section{Interferencia cuántica}
+
+\subsection{Objetivo}
+Mostrar que las amplitudes se suman y pueden cancelarse, y que por eso el
+resultado de un circuito depende de las \emph{fases} y no solo de las
+probabilidades intermedias.
+
+\subsection{Conceptos previos}
+\begin{concepto}{amplitudes con signo y suma de amplitudes}
+Ver sección~\ref{sec:prerreq}. Una amplitud puede ser negativa o compleja;
+una probabilidad no. Al encadenar puertas, las amplitudes que llegan al mismo
+resultado se \emph{suman} (con su signo/fase) \emph{antes} de elevar al
+cuadrado.
+\end{concepto}
+
+\subsection{Fundamento teórico}
+Aplicando $H$ dos veces a $\ket0$:
+\begin{align}
+  H\ket0&=\tfrac1{\sqrt2}(\ket0+\ket1),\\
+  HH\ket0&=\tfrac1{\sqrt2}\Big[\tfrac1{\sqrt2}(\ket0+\ket1)+
+     \tfrac1{\sqrt2}(\ket0-\ket1)\Big]=\ket0 .
+\end{align}
+La amplitud de $\ket1$ es $\tfrac12-\tfrac12=0$ (interferencia
+\emph{destructiva}); la de $\ket0$ es $\tfrac12+\tfrac12=1$ (\emph{constructiva}).
+Un modelo clásico probabilístico (50/50 y luego 50/50) daría de nuevo
+50/50, porque las probabilidades nunca se cancelan; las amplitudes sí.
+
+Con una fase en medio, $Z$ cambia el signo de $\ket1$:
+$ZH\ket0=\tfrac1{\sqrt2}(\ket0-\ket1)=\ket-$ y $H\ket-=\ket1$. En general
+$HZH=X$.
+\begin{center}
+\begin{quantikz}
+\lstick{$\ket0$} & \gate{H} & \gate{Z} & \gate{H} & \meter{}
+\end{quantikz}
+\end{center}
+Este es el principio de los algoritmos cuánticos: diseñar fases para que las
+respuestas incorrectas se cancelen y la correcta se refuerce (capítulo~06).
+
+\subsection{Código (completamente comentado)}
+\lstinputlisting[style=py]{../../fuentes/05a_interferencia.py}
+
+\subsection{Explicación celda por celda}
+\begin{description}
+  \item[Celda 2] Compara un circuito con una $H$ (50/50) y otro con dos $H$
+    (solo $\ket0$). Se usa \texttt{Statevector} para ver las amplitudes
+    exactas, sin aleatoriedad.
+  \item[Celda 3] Inserta $Z$ entre las dos $H$ y mide 1000 shots: sale
+    siempre ``1''. Solo se cambió una fase.
+\end{description}
+
+\subsection{Salida obtenida}
+\lstinputlisting[style=salida]{../../fuentes/salidas/05a_interferencia.txt}
+Es determinista porque la medición final tiene probabilidad $1$.
+
+\subsection{Interpretación}
+La puerta $Z$ ``no hace nada'' a las probabilidades de $\ket+$, pero cambia
+por completo el resultado final. Eso solo es posible porque la información
+de fase se almacena en el signo de las amplitudes.
+
+\subsection{Ejercicios}
+\begin{enumerate}
+  \item Reemplace $Z$ por la puerta $S$ (fase $i$) y prediga el resultado
+    antes de ejecutarlo.
+  \item Pruebe $H\,X\,H$: ¿a qué puerta equivale?
+  \item Explique por qué un ``coin flip'' clásico repetido no reproduce el
+    resultado de $HH$.
+\end{enumerate}
+
+\input{pie}
