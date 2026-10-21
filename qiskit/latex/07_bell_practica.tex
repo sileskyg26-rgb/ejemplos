@@ -1,0 +1,70 @@
+\def\tituloconcepto{Práctica guiada: Bell, variantes y GHZ}
+\input{cabecera}
+
+\section{Práctica guiada: Bell, variantes y GHZ}
+
+\subsection{Objetivo}
+Ejecutar el circuito de Bell, predecir resultados antes de verlos, modificarlo
+para distinguir superposición de determinismo, y generalizarlo a tres qubits
+(estado GHZ).
+
+\subsection{Conceptos previos}
+\begin{concepto}{entrelazamiento y shots}
+Haber leído el capítulo~05b (estado de Bell) y el 04 (shots y frecuencia).
+\end{concepto}
+
+\subsection{Fundamento teórico}
+\begin{itemize}
+  \item \textbf{Bell:} $H$ en $q_0$ y CNOT $q_0\to q_1$ dan
+    $\tfrac1{\sqrt2}(\ket{00}+\ket{11})$. Se esperan $\approx50\%$ de $00$ y
+    $\approx50\%$ de $11$.
+  \item \textbf{Variante con $X$:} $X\ket0=\ket1$ no crea superposición; el
+    CNOT copia ese $1$, así que el estado es $\ket{11}$ y el resultado es
+    determinista. Esto aísla el papel de $H$: es la fuente de la aleatoriedad.
+  \item \textbf{GHZ:} con $H$ y dos CNOT en cadena se obtiene
+    $\tfrac1{\sqrt2}(\ket{000}+\ket{111})$.
+\end{itemize}
+\begin{center}
+\begin{quantikz}
+\lstick{$q_0$} & \gate{H} & \ctrl{1} & \qw      & \meter{}\\
+\lstick{$q_1$} & \qw      & \targ{}  & \ctrl{1} & \meter{}\\
+\lstick{$q_2$} & \qw      & \qw      & \targ{}  & \meter{}
+\end{quantikz}
+\end{center}
+
+\subsection{Código (completamente comentado)}
+\lstinputlisting[style=py]{../07_bell_practica.py}
+
+\subsection{Explicación celda por celda}
+\begin{description}
+  \item[Celda 2] Bell con mediciones; \texttt{measure([0,1],[0,1])} conecta
+    cada qubit con un bit clásico.
+  \item[Celda 3] Sustituye \texttt{h(0)} por \texttt{x(0)}.
+  \item[Celda 4] Reto: GHZ de 3 qubits.
+  \item[Celda 5] Reto: distintos números de shots.
+\end{description}
+
+\subsection{Salida obtenida}
+\lstinputlisting[style=salida]{../salidas/07_bell_practica.txt}
+(El dibujo de texto del circuito, que imprime el script, no se reproduce aquí.)
+
+\subsection{Interpretación}
+\begin{itemize}
+  \item Con $x$ en lugar de $h$ solo sale $11$: ya no hay aleatoriedad.
+  \item GHZ solo da $000$ y $111$.
+  \item Con $10$ shots, las proporciones pueden alejarse mucho de $50/50$
+    (aquí, 8 contra 2); con $10\,000$ se acercan. Es ruido \emph{estadístico},
+    no físico (el siguiente capítulo introduce el ruido físico).
+\end{itemize}
+\textbf{Pregunta clave:} ¿por qué nunca sale $01$ ni $10$? Porque el CNOT
+fuerza que $q_1$ copie el valor de $q_0$ en la base computacional.
+
+\subsection{Ejercicios}
+\begin{enumerate}
+  \item Prediga y verifique qué ocurre con $h(0)$ seguido de $x(1)$ (sin CNOT).
+  \item Extienda GHZ a 5 qubits.
+  \item Mida solo uno de los tres qubits de GHZ y observe cuál es la
+    distribución del resto.
+\end{enumerate}
+
+\input{pie}

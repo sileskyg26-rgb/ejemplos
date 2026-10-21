@@ -1,0 +1,75 @@
+\def\tituloconcepto{Las puertas cuánticas son matrices unitarias}
+\input{cabecera}
+
+\section{Las puertas cuánticas son matrices unitarias}
+
+\subsection{Objetivo}
+Ver que aplicar una puerta equivale a multiplicar una matriz por el vector de
+estado, y por qué esa matriz debe ser unitaria.
+
+\subsection{Conceptos previos}
+\begin{concepto}{multiplicación matriz--vector y unitariedad}
+Ver sección~\ref{sec:prerreq}: matrices unitarias ($U^\dagger U=I$) y notación
+de Dirac. Recordatorio: el producto
+$\begin{psmallmatrix}a&b\\c&d\end{psmallmatrix}\binom xy=\binom{ax+by}{cx+dy}$.
+\end{concepto}
+
+\subsection{Fundamento teórico}
+Una puerta de un qubit es una matriz $U\in\C^{2\times2}$ unitaria y el estado
+evoluciona como $\ket{\psi'}=U\ket\psi$. Las más usadas:
+\begin{equation}
+H=\frac1{\sqrt2}\begin{pmatrix}1&1\\1&-1\end{pmatrix},\quad
+X=\begin{pmatrix}0&1\\1&0\end{pmatrix},\quad
+Z=\begin{pmatrix}1&0\\0&-1\end{pmatrix}.
+\end{equation}
+Con $H\ket0=\frac1{\sqrt2}(\ket0+\ket1)=:\ket+$ y
+$H\ket1=\frac1{\sqrt2}(\ket0-\ket1)=:\ket-$. \emph{(Aquí se usa la notación
+$\ket\pm$ solo como abreviatura.)}
+
+\paragraph{Por qué unitarias.} Si $U^\dagger U=I$ entonces
+$\|U\ket\psi\|^2=\bra\psi U^\dagger U\ket\psi=\|\ket\psi\|^2$: la
+normalización (probabilidades que suman 1) se conserva. Además $U$ es
+invertible con $U^{-1}=U^\dagger$, es decir, la evolución cuántica es
+\emph{reversible}. Para $H$ se cumple $H^\dagger=H$ y $H^2=I$.
+
+\subsection{Código (completamente comentado)}
+\lstinputlisting[style=py]{../02_puertas_matrices.py}
+
+\subsection{Explicación celda por celda}
+\begin{description}
+  \item[Celda 1] \texttt{Operator} convierte un circuito en su matriz.
+  \item[Celda 2] Para cada puerta crea un circuito de un qubit y extrae su
+    matriz. \texttt{getattr(qc, "h")(0)} equivale a \texttt{qc.h(0)}; se usa
+    para recorrer varias puertas en un ciclo.
+  \item[Celda 3] Calcula $H\ket0$ con \texttt{@} (producto matricial de
+    NumPy) y con \texttt{.evolve()} de Qiskit; ambos dan
+    $(1/\sqrt2,\,1/\sqrt2)\approx(0.707,\,0.707)$.
+  \item[Celda 4] Verifica numéricamente $H^\dagger H=I$ y $H^2=I$.
+    \texttt{np.allclose} compara con tolerancia numérica (no se usa
+    \texttt{==} con decimales).
+\end{description}
+
+\subsection{Salida obtenida}
+\lstinputlisting[style=salida]{../salidas/02_puertas_matrices.txt}
+
+\subsection{Interpretación}
+Cada puerta es una matriz concreta y calculable. El resultado
+$H\ket0=(0.707,0.707)$ confirma una superposición con
+$P(0)=P(1)=\tfrac12$.
+
+\subsection{Ejercicios}
+\begin{enumerate}
+  \item Calcule a mano $XZ\ket0$ y $ZX\ket0$. ¿Conmutan $X$ y $Z$?
+  \item Verifique en el código que $X$ y $Z$ son unitarias.
+  \item Calcule $H\ket1$ y compruebe que sus probabilidades son $\tfrac12,\tfrac12$
+    aunque una amplitud sea negativa.
+\end{enumerate}
+
+\subsection{Errores comunes}
+\begin{itemize}
+  \item Con varios qubits, la matriz de un circuito usa el orden
+    little-endian de Qiskit; para un solo qubit no hay ambigüedad.
+  \item Comparar matrices con \texttt{==}: use \texttt{np.allclose}.
+\end{itemize}
+
+\input{pie}

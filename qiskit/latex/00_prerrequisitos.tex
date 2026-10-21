@@ -1,0 +1,123 @@
+\def\tituloconcepto{Prerrequisitos y notación}
+\input{cabecera}
+
+\section{Prerrequisitos y notación}
+\label{sec:prerreq}
+
+Este capítulo reúne las herramientas matemáticas y de software que usan todos
+los demás. Cada capítulo de concepto indica, en sus cajas azules, qué
+secciones de aquí necesita; si algo no se entiende, conviene volver a la
+sección correspondiente antes de continuar.
+
+\subsection{Números complejos}
+Un número complejo es $z=a+bi$ con $a,b\in\R$ e $i^2=-1$.
+\begin{itemize}
+  \item \textbf{Conjugado:} $\bar z=a-bi$.
+  \item \textbf{Módulo:} $|z|=\sqrt{z\bar z}=\sqrt{a^2+b^2}$. Es el que importa
+    para las probabilidades.
+  \item \textbf{Forma polar y fórmula de Euler:} $z=|z|e^{i\varphi}$, con
+    $e^{i\varphi}=\cos\varphi+i\sin\varphi$. El ángulo $\varphi$ es la
+    \emph{fase}.
+\end{itemize}
+En Python un complejo se escribe \texttt{1+1j} (la unidad imaginaria es
+\texttt{1j}) y \texttt{np.abs(z)} devuelve su módulo.
+
+\subsection{Vectores, norma y producto interno}
+Los estados de $n$ qubits viven en $\C^{2^n}$. Para vectores columna
+$u,v\in\C^d$ el producto interno es $\braket{u}{v}=\sum_k \bar u_k v_k$ y la
+norma es $\|v\|=\sqrt{\braket{v}{v}}$. Un estado cuántico válido siempre tiene
+$\|v\|=1$ (``normalizado'').
+
+\subsection{Notación de Dirac}
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Símbolo & Significado & En Python/numpy\\
+\midrule
+$\ket{\psi}$ & vector columna (``ket'') & \texttt{np.array([a, b])}\\
+$\bra{\psi}$ & su transpuesta conjugada (``bra'') & \texttt{v.conj()}\\
+$\braket{\varphi}{\psi}$ & producto interno & \texttt{np.vdot(phi, psi)}\\
+$\ket{0}=\binom10,\ \ket{1}=\binom01$ & base computacional &
+  \texttt{Statevector.from\_label("0")}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Matrices unitarias}
+La adjunta de $U$ es $U^\dagger=\bar U^{\,T}$ (transpuesta conjugada). $U$ es
+\emph{unitaria} si $U^\dagger U=UU^\dagger=I$. Las matrices unitarias
+conservan la norma: $\|U v\|=\|v\|$, y son invertibles con $U^{-1}=U^\dagger$.
+Toda puerta cuántica es una matriz unitaria.
+
+\subsection{Producto tensorial (Kronecker)}
+Para combinar sistemas se usa $A\otimes B$. En vectores,
+$\ket{a}\otimes\ket{b}$ se escribe $\ket{ab}$; por ejemplo
+$\ket{0}\otimes\ket{1}=\ket{01}=(0,1,0,0)^T$. Con $n$ qubits la base tiene
+$2^n$ vectores $\ket{x}$, $x\in\{0,1\}^n$. Un estado que \emph{no} puede
+escribirse como $\ket{a}\otimes\ket{b}$ está entrelazado (capítulo~05b).
+
+\subsection{Probabilidad básica}
+\begin{itemize}
+  \item \textbf{Regla de Born:} si el estado es $\sum_x c_x\ket{x}$, medir da
+    $x$ con probabilidad $|c_x|^2$ (y esas probabilidades suman 1 por la
+    normalización).
+  \item \textbf{Frecuencia y ley de los grandes números:} al repetir $N$ veces
+    un experimento con probabilidad $p$, la frecuencia observada tiene error
+    típico $\sqrt{p(1-p)/N}$ y tiende a $p$.
+\end{itemize}
+
+\subsection{Conceptos de Qiskit}
+\begin{description}
+  \item[Circuito (\texttt{QuantumCircuit})] Lista ordenada de puertas y
+    mediciones sobre qubits y bits clásicos.
+  \item[\texttt{Statevector}] Calcula el vector de estado \emph{exacto} de un
+    circuito sin medir; solo es posible en simulación.
+  \item[Simulador (\texttt{AerSimulator})] Ejecuta circuitos en el
+    computador local, con o sin ruido.
+  \item[Shot] Una ejecución completa del circuito con su medición. Se repite
+    muchas veces para estimar probabilidades.
+  \item[Conteos (\texttt{get\_counts})] Diccionario cadena-de-bits $\to$ número
+    de veces que salió.
+\end{description}
+
+\begin{nota}{Orden de los bits en Qiskit (little-endian)}
+Qiskit escribe las cadenas con el qubit $0$ a la \textbf{derecha}: la cadena
+\texttt{'10'} significa $q_1=1$, $q_0=0$. En estos ejemplos se señala cada
+vez que importa.
+\end{nota}
+
+\subsection{Puertas usadas en estos ejemplos}
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Puerta & Matriz & Efecto & Método Qiskit\\
+\midrule
+$H$ & $\frac1{\sqrt2}\begin{psmallmatrix}1&1\\1&-1\end{psmallmatrix}$ &
+  superposición & \texttt{qc.h(q)}\\
+$X$ & $\begin{psmallmatrix}0&1\\1&0\end{psmallmatrix}$ &
+  NOT: $\ket0\leftrightarrow\ket1$ & \texttt{qc.x(q)}\\
+$Z$ & $\begin{psmallmatrix}1&0\\0&-1\end{psmallmatrix}$ &
+  cambia el signo de $\ket1$ & \texttt{qc.z(q)}\\
+$R_y(\theta)$ &
+  $\begin{psmallmatrix}\cos\frac\theta2&-\sin\frac\theta2\\
+  \sin\frac\theta2&\cos\frac\theta2\end{psmallmatrix}$ &
+  rotación real & \texttt{qc.ry(theta, q)}\\
+CNOT & (4$\times$4) & invierte el objetivo si el control es $\ket1$ &
+  \texttt{qc.cx(c, t)}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Cómo ejecutar el código}
+Cada ejemplo existe como \texttt{.py} (terminal) y como \texttt{.ipynb}
+(Jupyter/Colab). En el \texttt{.py}, las líneas \texttt{\# \%\%} separan
+``celdas'': en un notebook cada una es una celda; en la terminal no tienen
+efecto. Instalación (versiones con las que se probó todo):
+\begin{lstlisting}[style=salida]
+pip install qiskit==2.5.0 qiskit-aer==0.17.2 matplotlib pylatexenc
+python 01_qubit_vector.py
+\end{lstlisting}
+La API de Qiskit ha cambiado bastante entre versiones; si se usa otra versión
+algún ejemplo podría fallar.
+
+\input{pie}

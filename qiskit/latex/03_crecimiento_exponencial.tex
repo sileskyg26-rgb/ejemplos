@@ -1,0 +1,73 @@
+\def\tituloconcepto{Crecimiento exponencial: $2^n$ amplitudes}
+\input{cabecera}
+
+\section{Crecimiento exponencial: $2^n$ amplitudes}
+
+\subsection{Objetivo}
+Cuantificar por qué simular $n$ qubits en una computadora clásica requiere
+memoria que crece como $2^n$.
+
+\subsection{Conceptos previos}
+\begin{concepto}{producto tensorial y potencias de 2}
+Ver sección~\ref{sec:prerreq}. Idea clave: al combinar sistemas con
+$\otimes$, las dimensiones se \emph{multiplican}: $2\cdot2\cdots2=2^n$. Además,
+$1\,\mathrm{GiB}=2^{30}$ bytes.
+\end{concepto}
+
+\subsection{Fundamento teórico}
+El espacio de $n$ qubits es $(\C^2)^{\otimes n}\cong\C^{2^n}$; un estado
+general es
+\begin{equation}
+  \ket\psi=\sum_{x\in\{0,1\}^n}c_x\ket x,\qquad \sum_x|c_x|^2=1,
+\end{equation}
+con $2^n$ amplitudes complejas independientes (salvo normalización y fase
+global). Con \texttt{complex128} cada amplitud ocupa $16$ bytes, de modo que
+\begin{equation}
+  \text{memoria}=16\cdot2^n\ \text{bytes}.
+\end{equation}
+Para $n=30$: $16\cdot2^{30}$ B $=16$ GiB; para $n=50$: $16\cdot2^{50}$ B
+$=2^{24}$ GiB $=16$ PiB, y hay $\approx1.13\times10^{15}$ amplitudes.
+
+\paragraph{Un caso concreto.} Aplicar $H$ a cada uno de $n$ qubits partiendo de
+$\ket{0\cdots0}$ da
+$H^{\otimes n}\ket{0}^{\otimes n}=\frac1{\sqrt{2^n}}\sum_x\ket x$. Con $n=4$:
+$16$ amplitudes iguales a $1/4$.
+
+\begin{nota}{Matiz importante}
+Esto aplica a la simulación de circuitos \emph{generales} con el vector de
+estado. Hay circuitos con estructura (p.\,ej.\ solo puertas Clifford, o con
+poco entrelazamiento) que se simulan eficientemente con otros métodos. Tampoco
+significa que un computador cuántico ``guarde'' $2^n$ números accesibles: al
+medir solo se obtienen $n$ bits.
+\end{nota}
+
+\subsection{Código (completamente comentado)}
+\lstinputlisting[style=py]{../03_crecimiento_exponencial.py}
+
+\subsection{Explicación celda por celda}
+\begin{description}
+  \item[Celda 2] Recorre varios $n$, calcula $2^n$ y convierte a GiB
+    dividiendo entre $2^{30}$. Los formatos \texttt{:>18,} alinean y ponen
+    separadores de miles.
+  \item[Celda 3] Construye el estado $H^{\otimes4}\ket{0000}$ y comprueba que
+    hay $16$ amplitudes, todas iguales a $0.25$.
+\end{description}
+
+\subsection{Salida obtenida}
+\lstinputlisting[style=salida]{../salidas/03_crecimiento_exponencial.txt}
+
+\subsection{Interpretación}
+Cada qubit extra \emph{duplica} la memoria. A $30$ qubits ya se necesitan
+$16$~GiB; unos pocos más y ninguna laptop alcanza. Este es el motivo de que
+simular sea difícil y, a la vez, parte de la motivación de usar hardware
+cuántico.
+
+\subsection{Ejercicios}
+\begin{enumerate}
+  \item ¿Cuántos qubits se pueden simular con 64~GiB de RAM?
+  \item Repita el cálculo con \texttt{complex64} (8 bytes por amplitud).
+  \item Verifique con \texttt{Statevector} que para $n=3$ las amplitudes valen
+    $1/\sqrt8\approx0.354$.
+\end{enumerate}
+
+\input{pie}

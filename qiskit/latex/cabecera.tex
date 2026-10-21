@@ -1,0 +1,11 @@
+% Si el capitulo se compila solo (sin main.tex), esta cabecera abre el documento.
+% Antes de \input{cabecera} cada capitulo define \tituloconcepto.
+\ifdefined\enmain\else
+  \documentclass[11pt,a4paper]{article}
+  \input{preambulo}
+  \begin{document}
+  \title{\tituloconcepto}
+  \author{\autor}
+  \date{\today}
+  \maketitle
+\fi

@@ -1,0 +1,43 @@
+% Preambulo compartido por todos los documentos. Compilar con XeLaTeX/LuaLaTeX
+% (o Tectonic). Si se usa Overleaf, elegir el compilador XeLaTeX.
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,array}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{quantikz}
+\usepackage[hidelinks]{hyperref}
+
+% ---- Autor (editar a gusto) -------------------------------------------------
+\newcommand{\autor}{Genesis Silesky}
+
+% ---- Notacion de Dirac y atajos ---------------------------------------------
+% quantikz ya define \ket y \bra; DeclareRobustCommand los redefine sin error.
+\DeclareRobustCommand{\ket}[1]{\left|#1\right\rangle}
+\DeclareRobustCommand{\bra}[1]{\left\langle#1\right|}
+\DeclareRobustCommand{\braket}[2]{\left\langle#1\middle|#2\right\rangle}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\DeclareMathOperator{\Tr}{Tr}
+
+% ---- Cajas de apoyo --------------------------------------------------------
+% "concepto": definiciones previas que hacen falta para entender el capitulo.
+\newtcolorbox{concepto}[1]{breakable,colback=blue!4,colframe=blue!55!black,
+  fonttitle=\bfseries,title={Concepto previo: #1}}
+% "nota": aclaraciones y advertencias.
+\newtcolorbox{nota}[1]{breakable,colback=orange!6,colframe=orange!70!black,
+  fonttitle=\bfseries,title={#1}}
+
+% ---- Estilos de listados ----------------------------------------------------
+\lstdefinestyle{py}{language=Python,basicstyle=\ttfamily\footnotesize,
+  breaklines=true,postbreak=\mbox{\textcolor{gray}{$\hookrightarrow$}\space},
+  numbers=left,numberstyle=\tiny\color{gray},frame=single,
+  commentstyle=\color{green!40!black}\itshape,
+  keywordstyle=\color{blue!70!black}\bfseries,
+  stringstyle=\color{red!60!black},showstringspaces=false,tabsize=4,
+  columns=fullflexible,keepspaces=true}
+\lstdefinestyle{salida}{basicstyle=\ttfamily\footnotesize,breaklines=true,
+  frame=leftline,backgroundcolor=\color{gray!8},columns=fullflexible,
+  keepspaces=true}
