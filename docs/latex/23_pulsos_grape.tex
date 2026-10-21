@@ -1,0 +1,109 @@
+\def\tituloconcepto{Pulsos optimizados con GRAPE}
+\input{cabecera}
+
+\section{Pulsos optimizados con GRAPE: control como problema de optimización}
+
+\subsection{Objetivo}
+Diseñar con un algoritmo numérico (GRAPE) la forma de un pulso de
+radiofrecuencia que prepare un estado de Bell en dos espines acoplados, y
+comprobar cómo se comporta frente a errores de frecuencia y de amplitud.
+
+\subsection{Conceptos previos}
+\begin{concepto}{control con Hamiltoniano, fidelidad y gradiente}
+Ver capítulo~12 (control con pulsos y acoplamiento), capítulo~13 (fidelidad) y
+capítulo~19 (optimización con gradiente). La \emph{fidelidad} con un estado
+objetivo puro $\ket\phi$ es $F=|\langle\phi|\psi\rangle|^2$ (vale $1$ si son
+iguales).
+\end{concepto}
+
+\subsection{Fundamento teórico}
+Hasta ahora los pulsos tenían forma rectangular (\emph{pulsos duros}: amplitud
+constante durante cierto tiempo). Pero la forma de un pulso se puede elegir.
+Según las notas del curso, los \emph{pulsos con forma} (gaussianos, de Hermite)
+reducen los errores de excitación fuera de banda, y los algoritmos de
+optimización numérica como \textbf{GRAPE} y \textbf{SMP} ajustan la forma de los
+pulsos de control para maximizar la fidelidad de una operación dada: tratan el
+control como un problema de optimización, no de diseño manual. La guía de la
+práctica pide preparar un estado de Bell con GRAPE y hacer el pulso resistente a
+errores de $\pm10$~Hz en la frecuencia y $\pm5$\,\% en la amplitud.
+
+\paragraph{El problema.} Dos espines con acoplamiento $J=696$~Hz y control de
+radiofrecuencia en $x$ e $y$ sobre cada uno:
+\begin{equation}
+  H(t)=\frac{2\pi J}{4}\sigma_z\otimes\sigma_z
+  +\frac{2\pi}{2}\sum_{j=1}^{4}u_j(t)\,\sigma_j ,
+\end{equation}
+con cuatro controles $u_j(t)$ (en Hz): $\sigma_x$ y $\sigma_y$ de cada espín. Se
+busca la forma de $u_j(t)$ que lleve $\ket{00}$ a $\ket{\Phi^+}=(\ket{00}+\ket{11})/\sqrt2$.
+
+\paragraph{GRAPE.} (\emph{Gradient ascent pulse engineering.}) La duración total
+$T$ se divide en $N$ pasos de amplitud constante, y la amplitud de cada control
+en cada paso es un parámetro. Se maximiza
+\begin{equation}
+  F=\big|\langle\Phi^+|\,U_N\cdots U_2U_1\ket{00}\big|^2,\qquad
+  U_k=e^{-iH_k\,\Delta t}.
+\end{equation}
+El gradiente respecto de cada amplitud se obtiene propagando el estado hacia
+adelante y el objetivo hacia atrás (en primera aproximación en $\Delta t$), y un
+optimizador (aquí L-BFGS-B) lo usa para mejorar los parámetros.
+
+\paragraph{Robustez.} Para que el pulso resista errores se optimiza el
+\emph{promedio} de la fidelidad sobre varias condiciones de error a la vez:
+desintonías $\pm\Delta$ en ambos espines y factores de escala de amplitud.
+
+\begin{nota}{Fuentes y alcance}
+Este capítulo se basa en el resumen de las notas (qué son GRAPE y SMP) y en la
+guía de la práctica. Los archivos de teoría de pulsos con forma y de
+optimización numérica son escaneos sin texto legible. Por eso aquí \textbf{solo se
+implementa GRAPE} con el estado de Bell; no se implementan SMP, los pulsos duros
+de comparación ni los pulsos gaussianos o de Hermite.
+\end{nota}
+
+\subsection{Código (completamente comentado)}
+\lstinputlisting[style=py]{../../fuentes/23_pulsos_grape.py}
+
+\subsection{Explicación celda por celda}
+\begin{description}
+  \item[Celda 2] Define $H$ con deriva, controles, $T=1$~ms, $N=20$ pasos,
+    amplitud máxima de $5$~kHz y el estado objetivo.
+  \item[Celda 3] GRAPE: propagadores, fidelidad, gradiente y la función
+    \texttt{optimizar}, con cuatro intentos desde puntos iniciales distintos.
+  \item[Celda 4] Optimiza el pulso del caso ideal (sin errores).
+  \item[Celda 5] Evalúa ese pulso con desintonías de $\pm10$~Hz y errores de
+    amplitud de $\pm5$\,\% (nueve combinaciones).
+  \item[Celda 6] Optimiza el promedio sobre esas nueve combinaciones.
+  \item[Celda 7] Repite con errores mayores ($\pm300$~Hz y $\pm20$\,\%).
+\end{description}
+
+\subsection{Salida obtenida}
+\lstinputlisting[style=salida]{../../fuentes/salidas/23_pulsos_grape.txt}
+Es determinista (semillas fijas).
+
+\subsection{Interpretación}
+El pulso GRAPE prepara el estado de Bell con fidelidad $0.9979$, usando como
+máximo $1694$~Hz de amplitud. Con los errores de la guía ($\pm10$~Hz y
+$\pm5$\,\%), el pulso sin robustez ya mantiene una fidelidad promedio de
+$0.9939$ (mínima $0.9889$), y el robusto $0.9927$ (mínima $0.9902$):
+\textbf{casi no hay diferencia}, porque el pulso dura solo $1$~ms y esos errores
+son pequeños. Con errores mayores ($\pm300$~Hz y $\pm20$\,\%) la diferencia es
+grande: la fidelidad promedio del pulso sin robustez cae a $0.4130$ (mínima
+$0.0809$), mientras que el pulso optimizado para esos errores mantiene $0.9520$
+(mínima $0.8751$). Es el costo típico: el pulso robusto es un poco menos preciso
+en el caso ideal ($0.9966$ frente a $0.9979$).
+
+\subsection{Ejercicios}
+\begin{enumerate}
+  \item Aumenta $T$ a $2$~ms y mira cómo cambia la fidelidad y la robustez.
+  \item Reduce la amplitud máxima a $1$~kHz: ¿se sigue alcanzando el Bell?
+  \item Cambia el estado objetivo a $\ket{\Psi^+}=(\ket{01}+\ket{10})/\sqrt2$.
+\end{enumerate}
+
+\subsection{Errores comunes}
+\begin{itemize}
+  \item Creer que el optimizador siempre halla el máximo global: GRAPE puede
+    quedarse en un máximo local, por eso se prueban varios puntos iniciales.
+  \item Olvidar que la fidelidad reportada se calcula con el propagador exacto,
+    mientras que el gradiente usa una aproximación de primer orden.
+\end{itemize}
+
+\input{pie}

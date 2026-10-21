@@ -4,7 +4,7 @@ Una introducción práctica a la computación cuántica con Qiskit: cada concept
 
 **A quién va:** estudiantes con álgebra lineal básica (vectores, matrices, números complejos) y algo de Python. Si algo de la notación no se entiende, empieza por el capítulo de [prerrequisitos y notación](docs/pdf/00_prerrequisitos.pdf).
 
-**Orden de lectura:** de arriba hacia abajo, del 1 al 20. Cada sección tiene la teoría, el botón de Colab y el PDF completo. También hay un [PDF con todo reunido](docs/pdf/main.pdf).
+**Orden de lectura:** de arriba hacia abajo, del 1 al 23. Cada sección tiene la teoría, el botón de Colab y el PDF completo. También hay un [PDF con todo reunido](docs/pdf/main.pdf).
 
 ## Estructura del repositorio
 
@@ -50,6 +50,9 @@ python fuentes/build_notebooks.py   # regenera notebooks/ desde fuentes/*.py
 18. [Algoritmo HHL](#18-algoritmo-hhl)
 19. [VQE](#19-vqe)
 20. [QAOA](#20-qaoa)
+21. [Decoherencia y spin echo](#21-decoherencia-y-spin-echo)
+22. [Desacople dinámico](#22-desacople-dinámico)
+23. [Pulsos optimizados con GRAPE](#23-pulsos-optimizados-con-grape)
 
 > **Nota sobre el orden de bits:** Qiskit escribe las cadenas con el qubit 0 a la derecha. `'10'` significa $q_1=1,\ q_0=0$.
 
@@ -423,3 +426,48 @@ El **algoritmo de optimización cuántica aproximada** (Farhi, Goldstone y Gutma
 **Max-Cut:** repartir los vértices de un grafo en dos grupos para cortar el mayor número de aristas. Con $x_i\in\{0,1\}$, $L(x)=\sum_{(u,v)}(x_u+x_v-2x_ux_v)$, y al cambiar $x_i\to\frac{I-Z_i}2$ queda $H_C=\sum_{(u,v)}\frac{1-Z_uZ_v}2$. El ejemplo resuelve el caso de dos lugares unidos por una arista y estudia cómo cambia el resultado con el número de capas $p$.
 
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/20_qaoa.ipynb) [📄 Documento completo (PDF)](docs/pdf/20_qaoa.pdf)
+
+---
+
+## 21. Decoherencia y spin echo
+
+Con el tiempo un qubit **pierde información**: el vector de Bloch se acorta y el estado pasa de *puro* (superficie de la esfera) a *mezclado* (interior). Hay dos procesos: la **relajación longitudinal** ($T_1$, cambia la población) y la **transversal** ($T_2$, se pierde la fase). En resonancia magnética nuclear la transversal pesa más.
+
+En una muestra con muchos espines, un campo no uniforme hace que cada uno gire a una frecuencia distinta; las fases se separan y la magnetización neta decae (con tiempo $T_2^{*}$).
+
+**Spin echo (Hahn, 1950).** Un pulso $\pi$ a mitad del tiempo $t$ invierte las fases acumuladas, $\theta_i\to-\theta_i$; en la segunda mitad cada espín acumula lo contrario y en $t$ todos vuelven a la misma fase: aparece el **eco**. El eco es menor que la señal inicial, porque la relajación natural ($T_2$) no se corrige: $T_2\ge T_2^{*}$.
+
+Un solo pulso da un eco cuya fase puede no coincidir con la inicial; con un **segundo pulso $\pi$** en el eco siempre coincide. La secuencia **CPMG-$n$** reparte $n$ pulsos $\pi$ en el tiempo y funciona mejor en intervalos largos.
+
+*Nota:* los valores numéricos del ejemplo ($T_1$, $T_2$, dispersión de frecuencias) son elegidos para ilustrar, no medidos.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/21_decoherencia_spin_echo.ipynb) [📄 Documento completo (PDF)](docs/pdf/21_decoherencia_spin_echo.pdf)
+
+---
+
+## 22. Desacople dinámico
+
+Dos espines acoplados ($H=2\pi J\,\sigma_z\otimes\sigma_z/4$) hacen que la fase de uno dependa del estado del otro: si $H$ está en $\lvert0\rangle$, $P$ gira en un sentido, y en el contrario si está en $\lvert1\rangle$. La fase acumulada es $\pm\pi Jt$. Si $H$ está en superposición, $P$ queda entrelazado y su vector de Bloch se acorta.
+
+Un **pulso $\pi$ a mitad de la evolución** cancela el acoplamiento:
+
+- $\pi$ sobre $H$ o sobre $P$: **hay desacople** ($P$ termina como si $J=0$).
+- $\pi$ sobre **ambos**: **no hay desacople**, porque $\sigma_z\otimes\sigma_z$ no cambia al invertir los dos espines.
+
+*Nota:* el PDF de teoría de esta práctica es un escaneo sin texto legible. Las conclusiones salen de calcular el modelo a partir de la guía del experimento y del capítulo 12; no se cubre el ejercicio del sistema de 5 espines.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/22_desacople_dinamico.ipynb) [📄 Documento completo (PDF)](docs/pdf/22_desacople_dinamico.pdf)
+
+---
+
+## 23. Pulsos optimizados con GRAPE
+
+Un pulso no tiene por qué ser rectangular: su forma se puede elegir. Los algoritmos de optimización numérica (**GRAPE**, **SMP**) ajustan la forma de los pulsos de control para maximizar la fidelidad de una operación, tratando el control como un **problema de optimización** y no como un diseño manual.
+
+En GRAPE el pulso se divide en $N$ pasos de amplitud constante, y la amplitud de cada control en cada paso es un parámetro. Se maximiza la fidelidad $F=\lvert\langle\text{objetivo}\rvert U(T)\lvert\text{inicial}\rangle\rvert^2$ con un gradiente obtenido propagando el estado hacia adelante y el objetivo hacia atrás.
+
+El ejemplo prepara el estado de Bell $(\lvert00\rangle+\lvert11\rangle)/\sqrt2$ en dos espines acoplados ($J=696$ Hz) con fidelidad $0.998$. Para hacerlo **robusto** se optimiza el promedio de la fidelidad sobre varias desintonías y errores de amplitud. Con los errores de la guía ($\pm10$ Hz y $\pm5$ %) casi no hay diferencia; con errores mayores ($\pm300$ Hz y $\pm20$ %) el pulso sin robustez cae a una fidelidad promedio de $0.41$ y el robusto mantiene $0.95$.
+
+*Nota:* los PDF de teoría de pulsos con forma y de optimización numérica son escaneos sin texto legible. Aquí solo se implementa GRAPE con el estado de Bell; no se implementan SMP ni los pulsos gaussianos o de Hermite.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/23_pulsos_grape.ipynb) [📄 Documento completo (PDF)](docs/pdf/23_pulsos_grape.pdf)

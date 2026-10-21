@@ -1,0 +1,104 @@
+\def\tituloconcepto{Desacople dinámico}
+\input{cabecera}
+
+\section{Desacople dinámico: apagar el acoplamiento con pulsos $\pi$}
+
+\subsection{Objetivo}
+Ver cómo el acoplamiento entre dos espines hace que la fase de uno dependa del
+estado del otro, y cómo un pulso $\pi$ a mitad de la evolución lo cancela
+(\emph{desacople}).
+
+\subsection{Conceptos previos}
+\begin{concepto}{acoplamiento $\sigma_z\otimes\sigma_z$ y spin echo}
+Ver capítulo~12 (el acoplamiento $H=2\pi J\,\sigma_z\otimes\sigma_z/4$ y cómo el
+eje de giro de un qubit depende del otro) y capítulo~21 (un pulso $\pi$ revierte
+las fases acumuladas).
+\end{concepto}
+
+\subsection{Fundamento teórico}
+El desacople dinámico es una técnica de control que usa pulsos $\pi$ para
+suprimir interacciones no deseadas, y la idea es la misma del spin echo.
+
+\paragraph{Modelo.} Se usan dos espines: $H$ (un protón) y $P$ (un núcleo de
+fósforo), con acoplamiento $J=696$~Hz (el valor del capítulo~12). Durante un
+tiempo libre $t$,
+\begin{equation}
+  U(t)=\exp\!\big(-i\,2\pi J\,\sigma_z\otimes\sigma_z\,t/4\big).
+\end{equation}
+Si $H$ está en $\ket0$ (arriba), $P$ gira alrededor de $z$ con una frecuencia, y si
+está en $\ket1$ (abajo) con la contraria. La fase que acumula $P$ es
+$\pm\pi Jt$.
+
+\paragraph{Superposición.} Si $H$ está en una superposición, $P$ gira en los
+dos sentidos a la vez, y los dos espines se entrelazan: el vector de Bloch de
+$P$ se acorta ($|\cos\pi Jt|$ para la superposición $50/50$) y su fase se
+pierde.
+
+\paragraph{Desacople con un pulso $\pi$.} Se deja evolucionar $t/2$, se aplica un
+pulso $\pi$ y se deja evolucionar otros $t/2$:
+\begin{itemize}
+  \item \textbf{$\pi$ sobre $H$:} invierte el estado de $H$ y, con él, el signo
+    del giro de $P$ en la segunda mitad; las fases se cancelan.
+  \item \textbf{$\pi$ sobre $P$:} invierte la fase de $P$ en la mitad; lo que
+    acumula después deshace lo anterior (como en el spin echo).
+  \item \textbf{$\pi$ sobre ambos:} ambos efectos se suman en vez de cancelarse.
+    El producto $\sigma_z\otimes\sigma_z$ no cambia al invertir los dos espines,
+    así que el acoplamiento sigue activo.
+\end{itemize}
+Se considera que hubo desacople si $P$ termina igual que lo haría sin acoplamiento
+($J=0$) con la misma secuencia de pulsos.
+
+\begin{nota}{Fuentes y alcance}
+Este capítulo se basa en la guía de la práctica de desacople dinámico y en el
+modelo de acoplamiento del capítulo~12. El archivo de teoría de esta práctica es
+un escaneo sin texto legible, así que las conclusiones salen \textbf{de calcular}
+el modelo, no de citar el documento. No se cubre el último ejercicio de la
+guía (diseñar un conjunto de pulsos para 5 espines con una matriz de
+desacople).
+\end{nota}
+
+\subsection{Código (completamente comentado)}
+\lstinputlisting[style=py]{../../fuentes/22_desacople_dinamico.py}
+
+\subsection{Explicación celda por celda}
+\begin{description}
+  \item[Celda 2] Herramientas: evolución libre, pulso $\pi$ sobre $H$, $P$ o
+    ambos, vector de Bloch de $P$ (traza parcial) y su fase.
+  \item[Celda 3] Fase de $P$ con $H$ en $\ket0$ y en $\ket1$ para $t=0.5$, $1$ y
+    $2$~ms.
+  \item[Celda 4] Longitud transversal de $P$ con $H$ en superposición.
+  \item[Celda 5] Aplica un pulso $\pi$ a mitad de la evolución y compara la fase de $P$
+    con y sin acoplamiento.
+\end{description}
+
+\subsection{Salida obtenida}
+\lstinputlisting[style=salida]{../../fuentes/salidas/22_desacople_dinamico.txt}
+Es determinista.
+
+\subsection{Interpretación}
+La fase de $P$ vale $\pm\pi Jt$: $62.6^\circ$ a $0.5$~ms y $125.3^\circ$ a $1$~ms,
+con signo opuesto según el estado de $H$. Con $H$ en superposición $50/50$, la
+longitud transversal de $P$ baja a $0.460$ ($0.5$~ms) y a $0.578$ ($1$~ms),
+que coincide con $|\cos\pi Jt|$. Con un pulso $\pi$ sobre $H$ o sobre $P$ a
+mitad de la evolución, la fase de $P$ es $0^\circ$, igual que sin acoplamiento:
+\textbf{hay desacople}. Con $\pi$ sobre ambos, la fase queda en $\mp125.3^\circ$
+(a $1$~ms): \textbf{no hay desacople}.
+
+\subsection{Ejercicios}
+\begin{enumerate}
+  \item Cambia la posición del pulso $\pi$ (por ejemplo, a $t/4$) y observa si
+    hay desacople.
+  \item Con $H$ en superposición $50/50$, aplica un pulso $\pi$ sobre $H$ a mitad
+    y mide la longitud transversal de $P$.
+  \item Prueba con $J=300$~Hz y con $t=2$~ms: ¿cambia la conclusión?
+\end{enumerate}
+
+\subsection{Errores comunes}
+\begin{itemize}
+  \item Creer que invertir los dos espines ayuda: como $\sigma_z\otimes\sigma_z$
+    no cambia, el acoplamiento sigue.
+  \item Olvidar comparar con el caso $J=0$: el pulso $\pi$ también cambia la
+    fase de $P$ por sí mismo.
+\end{itemize}
+
+\input{pie}
