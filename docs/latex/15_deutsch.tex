@@ -1,0 +1,120 @@
+\def\tituloconcepto{Algoritmo de Deutsch}
+\input{cabecera}
+
+\section{Algoritmo de Deutsch}
+
+\subsection{Objetivo}
+Resolver con una sola consulta un problema que clásicamente necesita dos:
+decidir si una función de un bit es constante o balanceada.
+
+\subsection{Conceptos previos}
+\begin{concepto}{superposición, puerta H e interferencia}
+Ver capítulos~01, 02 y~05a. La puerta $H$ convierte $\ket0$ en
+$(\ket0+\ket1)/\sqrt2$ y $\ket1$ en $(\ket0-\ket1)/\sqrt2$, y dos $H$ seguidas
+se cancelan.
+\end{concepto}
+
+\subsection{Fundamento teórico}
+El algoritmo de Deutsch, propuesto por David Deutsch en 1985, se considera el
+primer algoritmo que demuestra la ventaja de un computador cuántico sobre uno
+clásico.
+
+\paragraph{El problema (las cajas de pintura).} Hay dos bolas, una liviana
+($x=0$) y una pesada ($x=1$), que se pintan de blanco ($f=0$) o negro ($f=1$).
+Hay cajas de un solo color (pintan las dos bolas igual) y cajas de dos colores
+(las pintan distinto), pero se mezclaron. ¿Cuántas veces hay que pintar para
+distinguirlas?
+
+En términos matemáticos, la caja es una función $f:\{0,1\}\to\{0,1\}$:
+\begin{itemize}
+  \item \textbf{constante} si $f(0)=f(1)$ (caja de un solo color);
+  \item \textbf{balanceada} si $f(0)\neq f(1)$ (caja de dos colores).
+\end{itemize}
+Clásicamente hay que evaluar $f(0)$ y $f(1)$ y compararlos: \textbf{dos consultas}.
+
+\paragraph{El oráculo.} La función se da como una puerta unitaria $U_f$ que
+actúa como
+\begin{equation}
+  U_f\ket x\ket y=\ket x\ket{y\oplus f(x)},
+\end{equation}
+donde $\oplus$ es la suma módulo~2 (XOR). El primer qubit es el
+\emph{registro de datos} y el segundo el \emph{registro objetivo}.
+Gracias a la superposición, una sola aplicación de $U_f$ evalúa $f(0)$ y $f(1)$
+a la vez (\emph{paralelismo cuántico}).
+
+\paragraph{El circuito.}
+\begin{center}
+\begin{quantikz}
+\lstick{$\ket0$} & \gate{H} & \gate[2]{U_f} & \gate{H} & \meter{}\\
+\lstick{$\ket1$} & \gate{H} &               & \qw      & \qw
+\end{quantikz}
+\end{center}
+\begin{enumerate}
+  \item Estado inicial $\ket{\psi_0}=\ket0\ket1$.
+  \item Con $H$ en ambos qubits:
+    $\ket{\psi_1}=\frac{\ket0+\ket1}{\sqrt2}\,\frac{\ket0-\ket1}{\sqrt2}$.
+  \item Una consulta a $U_f$. Como el objetivo está en $(\ket0-\ket1)/\sqrt2$,
+    el oráculo solo cambia el signo de cada $\ket x$:
+    \begin{equation}
+      U_f\ket x\,\frac{\ket0-\ket1}{\sqrt2}=(-1)^{f(x)}\ket x\,\frac{\ket0-\ket1}{\sqrt2}.
+    \end{equation}
+    Por tanto
+    $\ket{\psi_2}=\frac{(-1)^{f(0)}\ket0+(-1)^{f(1)}\ket1}{\sqrt2}\,
+    \frac{\ket0-\ket1}{\sqrt2}$.
+    \begin{itemize}
+      \item Si $f$ es constante, los datos quedan en $\pm\frac{\ket0+\ket1}{\sqrt2}$.
+      \item Si $f$ es balanceada, quedan en $\pm\frac{\ket0-\ket1}{\sqrt2}$.
+    \end{itemize}
+  \item $H$ sobre los datos: $\ket{\psi_3}=\pm\ket0$ si $f$ es constante y
+    $\pm\ket1$ si es balanceada.
+  \item Se mide el registro de datos: $0$ significa constante y $1$ significa balanceada.
+\end{enumerate}
+\textbf{Una consulta contra dos.}
+
+\subsection{Código (completamente comentado)}
+\lstinputlisting[style=py]{../../fuentes/15_deutsch.py}
+
+\subsection{Explicación celda por celda}
+\begin{description}
+  \item[Celda 2] Lista las cuatro funciones posibles y dice si cada una es
+    constante o balanceada.
+  \item[Celda 3] Construye el oráculo $U_f$: una $X$ al objetivo si $f$ vale 1
+    siempre, una CNOT si $f(x)=x$, y CNOT más $X$ si $f(x)=1-x$.
+  \item[Celda 4] Arma el circuito: objetivo en $\ket1$, $H$ en ambos, oráculo,
+    $H$ en los datos y medición.
+  \item[Celda 5] Lo ejecuta con las cuatro funciones y 1000 mediciones.
+  \item[Celda 6] Muestra los signos $(-1)^{f(x)}$ del registro de datos
+    después del oráculo.
+\end{description}
+
+\subsection{Salida obtenida}
+\lstinputlisting[style=salida]{../../fuentes/salidas/15_deutsch.txt}
+(El dibujo del circuito no se reproduce aquí.)
+
+\subsection{Interpretación}
+El resultado no es aleatorio: las dos funciones constantes siempre dan $0$ y las
+dos balanceadas siempre dan $1$, con una sola consulta. Los signos de la última
+parte coinciden con $(-1)^{f(x)}$: $(+1,+1)$ y $(-1,-1)$ para las constantes,
+$(+1,-1)$ y $(-1,+1)$ para las balanceadas. Lo que distingue los casos es la
+\emph{fase relativa} entre $\ket0$ y $\ket1$, que la $H$ final convierte en
+una diferencia medible (interferencia, capítulo~05a).
+
+\subsection{Ejercicios}
+\begin{enumerate}
+  \item Elimina la $X$ inicial del objetivo y mira qué cambia en la
+    Celda~6.
+  \item ¿Cuántas consultas necesitaría un algoritmo clásico para $n=1$? ¿Y
+    el cuántico?
+  \item Cambia el oráculo de $f(x)=x$ por otro circuito equivalente y comprueba que
+    el resultado no cambia.
+\end{enumerate}
+
+\subsection{Errores comunes}
+\begin{itemize}
+  \item Creer que el algoritmo conoce $f(0)$ y $f(1)$ por separado: solo
+    averigua si son iguales o distintos.
+  \item Olvidar poner el objetivo en $\ket1$ antes de la $H$: sin esa fase
+    el oráculo no cambia el signo.
+\end{itemize}
+
+\input{pie}

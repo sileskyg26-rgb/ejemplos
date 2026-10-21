@@ -1,0 +1,12 @@
+constante 0           : f(0) = 0, f(1) = 0 -> constante
+constante 1           : f(0) = 1, f(1) = 1 -> constante
+balanceada f(x)=x     : f(0) = 0, f(1) = 1 -> balanceada
+balanceada f(x)=1-x   : f(0) = 1, f(1) = 0 -> balanceada
+constante 0           : medicion = {'0': 1000} -> constante
+constante 1           : medicion = {'0': 1000} -> constante
+balanceada f(x)=x     : medicion = {'1': 1000} -> balanceada
+balanceada f(x)=1-x   : medicion = {'1': 1000} -> balanceada
+constante 0           : datos = (+1|0> +1|1>)/sqrt2
+constante 1           : datos = (-1|0> -1|1>)/sqrt2
+balanceada f(x)=x     : datos = (+1|0> -1|1>)/sqrt2
+balanceada f(x)=1-x   : datos = (-1|0> +1|1>)/sqrt2

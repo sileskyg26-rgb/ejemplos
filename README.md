@@ -4,7 +4,7 @@ Una introducción práctica a la computación cuántica con Qiskit: cada concept
 
 **A quién va:** estudiantes con álgebra lineal básica (vectores, matrices, números complejos) y algo de Python. Si algo de la notación no se entiende, empieza por el capítulo de [prerrequisitos y notación](docs/pdf/00_prerrequisitos.pdf).
 
-**Orden de lectura:** de arriba hacia abajo, del 1 al 13. Cada sección tiene la teoría, el botón de Colab y el PDF completo. También hay un [PDF con todo reunido](docs/pdf/main.pdf).
+**Orden de lectura:** de arriba hacia abajo, del 1 al 17. Cada sección tiene la teoría, el botón de Colab y el PDF completo. También hay un [PDF con todo reunido](docs/pdf/main.pdf).
 
 ## Estructura del repositorio
 
@@ -43,6 +43,10 @@ python fuentes/build_notebooks.py   # regenera notebooks/ desde fuentes/*.py
 11. [Oscilación de Rabi](#11-oscilación-de-rabi)
 12. [Control cuántico](#12-control-cuántico)
 13. [Tomografía de estados](#13-tomografía-de-estados)
+14. [Puertas universales y lógica reversible](#14-puertas-universales-y-lógica-reversible)
+15. [Algoritmo de Deutsch](#15-algoritmo-de-deutsch)
+16. [Algoritmo de Bernstein–Vazirani](#16-algoritmo-de-bernsteinvazirani)
+17. [QFT y estimación de fase](#17-qft-y-estimación-de-fase)
 
 > **Nota sobre el orden de bits:** Qiskit escribe las cadenas con el qubit 0 a la derecha. `'10'` significa $q_1=1,\ q_0=0$.
 
@@ -287,3 +291,81 @@ $$\rho=\tfrac14\sum_{i,j}c_{ij}\,\sigma_i\otimes\sigma_j.$$
 Términos como $\sigma_x\otimes I$ son el momento angular de un qubit; términos como $\sigma_z\otimes\sigma_z$ son la **correlación** entre ambos. Con entrelazamiento no basta medir cada qubit por separado, porque parte de la información está en las correlaciones.
 
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/13_tomografia.ipynb) [📄 Documento completo (PDF)](docs/pdf/13_tomografia.pdf)
+
+---
+
+## 14. Puertas universales y lógica reversible
+
+Un algoritmo cuántico es un circuito: puertas de uno, dos y tres qubits conectadas en cierto orden.
+
+**Un qubit.** Toda puerta de un qubit es una matriz unitaria $2\times2$ y se puede escribir como una rotación alrededor de $z$, otra alrededor de $y$ y otra alrededor de $z$, más una fase global:
+
+$$U=e^{i\alpha}R_z(\beta)\,R_y(\gamma)\,R_z(\delta).$$
+
+**Versión controlada.** Se puede escribir $U=e^{i\alpha}AXBXC$ con $ABC=I$ (para $A=R_z(\beta)R_y(\gamma/2)$, $B=R_y(-\gamma/2)R_z(-(\delta+\beta)/2)$, $C=R_z((\delta-\beta)/2)$). Si el control vale $\lvert0\rangle$, las $X$ no actúan y se aplica $ABC=I$ (no pasa nada); si vale $\lvert1\rangle$, se aplica $U$. Así una puerta controlada se arma con puertas de uno y dos qubits.
+
+**Toffoli** ($C^2(X)$): dos qubits de control y uno objetivo; lo invierte solo si ambos controles valen $\lvert1\rangle$.
+
+**Lógica clásica con puertas cuánticas.** Toda puerta lógica clásica se convierte en una puerta reversible hecha con $X$, CNOT y Toffoli:
+- **AND:** Toffoli con el objetivo en $\lvert0\rangle$.
+- **OR:** el objetivo empieza en $\lvert1\rangle$; $X$ en las entradas, Toffoli, $X$ en las entradas.
+- NAND, NOR, XOR y XNOR se arman con las mismas piezas.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/14_logica_reversible.ipynb) [📄 Documento completo (PDF)](docs/pdf/14_logica_reversible.pdf)
+
+---
+
+## 15. Algoritmo de Deutsch
+
+Propuesto por David Deutsch en 1985, es considerado el primer algoritmo que muestra la ventaja de un computador cuántico.
+
+**El problema (cajas de pintura).** Una caja negra $f:\{0,1\}\to\{0,1\}$ es *constante* si $f(0)=f(1)$ (caja de un solo color) o *balanceada* si $f(0)\neq f(1)$ (caja de dos colores). Clásicamente hay que evaluar $f(0)$ y $f(1)$: **2 consultas**.
+
+**El oráculo:** $U_f\lvert x\rangle\lvert y\rangle=\lvert x\rangle\lvert y\oplus f(x)\rangle$.
+
+**El circuito:** datos en $\lvert0\rangle$ y objetivo en $\lvert1\rangle$; $H$ en ambos; **una** consulta a $U_f$; $H$ en los datos; medir. Con el objetivo en $(\lvert0\rangle-\lvert1\rangle)/\sqrt2$, el oráculo solo cambia signos:
+
+$$U_f\lvert x\rangle\tfrac{\lvert0\rangle-\lvert1\rangle}{\sqrt2}=(-1)^{f(x)}\lvert x\rangle\tfrac{\lvert0\rangle-\lvert1\rangle}{\sqrt2}.$$
+
+Los datos quedan en $\pm\frac{\lvert0\rangle+\lvert1\rangle}{\sqrt2}$ si $f$ es constante y en $\pm\frac{\lvert0\rangle-\lvert1\rangle}{\sqrt2}$ si es balanceada. La $H$ final los lleva a $\lvert0\rangle$ (constante) o $\lvert1\rangle$ (balanceada). Es interferencia (capítulo 5a).
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/15_deutsch.ipynb) [📄 Documento completo (PDF)](docs/pdf/15_deutsch.pdf)
+
+---
+
+## 16. Algoritmo de Bernstein–Vazirani
+
+Hay un número oculto $a$ de $n$ bits. Cada consulta con un $x$ devuelve un solo bit: $f(x)=a\cdot x\ (\mathrm{mod}\ 2)$.
+
+- **Clásico:** se consulta con $100\ldots0$, $010\ldots0$, $\ldots$, $000\ldots1$; la consulta $i$ da el bit $a_i$. Hacen falta **$n$ consultas**.
+- **Cuántico:** $\lvert0\rangle^{\otimes n}\to H^{\otimes n}\to U_f\to H^{\otimes n}\to$ medir, con $U_f\lvert x\rangle=(-1)^{a\cdot x}\lvert x\rangle$. **Una consulta.**
+
+Funciona porque $H^{\otimes n}\lvert a\rangle=\frac1{\sqrt{2^n}}\sum_x(-1)^{a\cdot x}\lvert x\rangle$, y como $H^{\otimes n}H^{\otimes n}=I$:
+
+$$\lvert a\rangle=H^{\otimes n}\,U_f\,H^{\otimes n}\lvert0\rangle^{\otimes n}.$$
+
+**Sin entrelazamiento:** $U_f$ es un producto de puertas de un solo qubit ($I$ si $a_i=0$, $Z$ si $a_i=1$), así que el estado nunca queda entrelazado. La ventaja viene de la **superposición**.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/16_bernstein_vazirani.ipynb) [📄 Documento completo (PDF)](docs/pdf/16_bernstein_vazirani.pdf)
+
+---
+
+## 17. QFT y estimación de fase
+
+**QFT.** Con $N=2^n$ estados de la base, la transformada de Fourier cuántica es la matriz unitaria
+
+$$\lvert j\rangle\ \mapsto\ \tfrac1{\sqrt N}\sum_{k=0}^{N-1}e^{2\pi i\,jk/N}\lvert k\rangle.$$
+
+Se parece a la transformada de Fourier discreta, pero transforma un estado cuántico en otro. Se arma con una Hadamard por qubit, **fases controladas** $CR_k$ (fase $e^{2\pi i/2^k}$) y SWAP finales. Necesita $O(n^2)$ puertas.
+
+**Estimación de fase (QPE).** Dada una unitaria $U$ con autovector $\lvert\psi\rangle$ y $U\lvert\psi\rangle=e^{2\pi i\varphi}\lvert\psi\rangle$, estima $\varphi$ con $m$ bits:
+
+1. Primer registro ($m$ qubits) en $\lvert0\rangle$ y segundo registro en $\lvert\psi\rangle$.
+2. Hadamard en el primer registro.
+3. Puertas $U^{2^k}$ controladas por el qubit $k$.
+4. QFT inversa sobre el primer registro.
+5. Medir: sale $\varphi_1\varphi_2\ldots\varphi_m$ (en binario).
+
+La QFT pasa información del estado a la fase; la QPE la pasa de la fase al estado. Ejemplo: la puerta $S$ tiene $\varphi=1/4=0.01_2$.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/17_qft_qpe.ipynb) [📄 Documento completo (PDF)](docs/pdf/17_qft_qpe.pdf)
