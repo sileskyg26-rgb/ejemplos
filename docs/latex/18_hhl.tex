@@ -1,0 +1,127 @@
+\def\tituloconcepto{Algoritmo HHL}
+\input{cabecera}
+
+\section{Algoritmo HHL: resolver un sistema lineal con dos qubits}
+
+\subsection{Objetivo}
+Entender cómo el algoritmo HHL resuelve $A\mathbf x=\mathbf b$ dividiendo los
+coeficientes de $\mathbf b$ entre los autovalores de $A$, y construir su versión
+de dos qubits para una matriz $2\times2$.
+
+\subsection{Conceptos previos}
+\begin{concepto}{autovalores, autovectores y estimación de fase}
+Ver capítulo~17 (estimación de fase) y la sección~\ref{sec:prerreq}. Una matriz
+hermítica $A$ se escribe como $A=\sum_i\lambda_i\ket{u_i}\bra{u_i}$, con
+autovalores $\lambda_i$ y autovectores $\ket{u_i}$.
+\end{concepto}
+
+\subsection{Fundamento teórico}
+HHL (Harrow, Hassidim y Lloyd, 2009) resuelve sistemas de ecuaciones lineales
+$A\mathbf x=\mathbf b$, con $A$ una matriz hermítica $N\times N$. Clásicamente, con
+métodos directos o iterativos, el tiempo es $O(N^3)$; en condiciones ideales,
+HHL lo reduce a $O(\log N)$. Se usa como subrutina en modelos de aprendizaje
+automático cuántico.
+
+\paragraph{Un ejemplo clásico.} Dos grupos hacen vasijas. En 2.5 horas, el grupo
+A hace una vasija más que el grupo B en 0.5 horas; y en 0.5 horas, A hace tantas
+como B en 2.5 horas. Si $x$ e $y$ son las vasijas por hora:
+\begin{equation}
+  \begin{pmatrix}2.5&-0.5\\-0.5&2.5\end{pmatrix}
+  \binom xy=\binom10 ,\qquad x=\tfrac5{12},\ y=\tfrac1{12}.
+\end{equation}
+
+\paragraph{La idea de HHL.} Los vectores se codifican como estados cuánticos
+normalizados, $\ket b$ y $\ket x$, y resolver $\mathbf x=A^{-1}\mathbf b$ pasa a ser
+$\ket x\propto A^{-1}\ket b$. Se escribe $\ket b$ en la base de autovectores,
+$\ket b=\sum_i\beta_i\ket{u_i}$ con $\beta_i=\langle u_i|b\rangle$, y entonces
+\begin{equation}
+  \ket x\ \propto\ \sum_i\frac{\beta_i}{\lambda_i}\ket{u_i}.
+\end{equation}
+Basta dividir cada coeficiente entre su autovalor. Para la matriz del
+ejemplo, los autovalores son $\lambda_1=2$ y $\lambda_2=3$, con autovectores
+$\ket{u_1}=\frac1{\sqrt2}\binom11$ y $\ket{u_2}=\frac1{\sqrt2}\binom1{-1}$.
+
+\paragraph{Los tres componentes.} HHL usa tres grupos de qubits: de codificación
+(guardan $\ket b$, $n_b=\log_2N$ qubits), de registro (guardan los autovalores
+estimados) y un qubit auxiliar. Los pasos son:
+\begin{enumerate}
+  \item \textbf{Estimación de fase:} estima los autovalores de $A$ y los guarda en el
+    registro: $\sum_i\beta_i\ket{\tilde\lambda_i}\ket{u_i}$.
+  \item \textbf{Rotación controlada:} usando el registro como control, gira el
+    qubit auxiliar un ángulo $\theta_i=2\sin^{-1}(c/\lambda_i)$. Así el
+    recíproco del autovalor pasa a la amplitud del auxiliar:
+    $\sum_i\beta_i\ket{\lambda_i}\ket{u_i}\big(\sqrt{1-c^2/\lambda_i^2}\ket0
+    +\frac c{\lambda_i}\ket1\big)$. El parámetro $c$ cumple $c\le\min|\lambda_i|$.
+  \item \textbf{Estimación de fase inversa:} desentrelaza el registro.
+  \item \textbf{Medición:} si el auxiliar vale $\ket1$ (con cierta probabilidad),
+    el qubit de codificación queda en $\ket x\propto\sum_i\frac{\beta_i}{\lambda_i}\ket{u_i}$.
+\end{enumerate}
+
+\paragraph{Versión de dos qubits.} Con una matriz $2\times2$ de autovalores
+$2$ y $3$, el registro necesita un solo qubit y el circuito se simplifica
+hasta quedar en dos qubits: un qubit de codificación y uno auxiliar. Si
+$A=U\,\mathrm{diag}(\lambda_1,\lambda_2)\,U^\dagger$, el circuito es:
+$U^\dagger$ sobre el qubit de codificación (los autovectores pasan a $\ket0$ y
+$\ket1$), una rotación $R_y(\theta_i)$ del auxiliar controlada por el qubit de
+codificación y, al final, $U$. Con $\lambda_1=2$ y $\lambda_2=3$, el mayor valor
+posible de $c$ es $2$.
+
+\subsection{Código (completamente comentado)}
+\lstinputlisting[style=py]{../../fuentes/18_hhl.py}
+
+\subsection{Explicación celda por celda}
+\begin{description}
+  \item[Celda 2] Resuelve el sistema de las vasijas de forma clásica.
+  \item[Celda 3] Calcula autovalores y autovectores, los coeficientes
+    $\beta_i$, y comprueba que $\sum_i(\beta_i/\lambda_i)\ket{u_i}$ da la misma
+    solución que la clásica (normalizada).
+  \item[Celda 4] Define el circuito HHL de dos qubits: codificar $\ket b$,
+    $U^\dagger$, rotaciones controladas y $U$.
+  \item[Celda 5] Calcula las amplitudes del qubit de codificación cuando el
+    auxiliar vale $\ket1$ y las compara con la solución clásica.
+  \item[Celda 6] Repite con la matriz del experimento y comprueba que su $U$ es
+    $R_y(\pi/4)$.
+  \item[Celda 7] Imprime las probabilidades de las cuatro cadenas
+    $\ket{q_1q_0}$ que se medirían.
+\end{description}
+
+\subsection{Salida obtenida}
+\lstinputlisting[style=salida]{../../fuentes/salidas/18_hhl.txt}
+(El dibujo del circuito no se reproduce aquí.) Es determinista.
+
+\subsection{Interpretación}
+Para el sistema de las vasijas, la solución cuántica normalizada es
+$(0.9806,0.1961)$, igual que la clásica $(5/12,1/12)$ normalizada. Para la
+matriz del experimento, $A=\begin{psmallmatrix}2.14645&-0.35355\\-0.35355&2.85355\end{psmallmatrix}$
+y $\mathbf b=(0.70711,0.70711)$, también coinciden: $(0.7887,0.6148)$. Sus
+autovalores son $2$ y $3$ y su matriz $U$ coincide con $R_y(\pi/4)$ (salvo
+signos). Al medir, la solución solo se obtiene cuando el auxiliar vale $1$,
+con probabilidad $0.72$ en el primer caso y $0.92$ en el segundo.
+
+\begin{nota}{Qué se simplifica en este ejemplo}
+Igual que en el PDF de la práctica, aquí los autovalores de $A$ se
+\emph{conocen} y se usan directamente para armar las rotaciones; la estimación de
+fase que los obtiene en un HHL completo se sustituye por esa información previa.
+Además, un estado cuántico no se puede leer entero: el código calcula las
+amplitudes con el simulador, lo que un equipo real no permite.
+\end{nota}
+
+\subsection{Ejercicios}
+\begin{enumerate}
+  \item Cambia $\mathbf b$ por $(\cos\varphi,\sin\varphi)$ con otro ángulo y compara
+    con la solución clásica.
+  \item Cambia $c$ a un valor menor que $2$: ¿qué pasa con la probabilidad de que
+    el auxiliar valga $1$?
+  \item Prueba con una matriz $2\times2$ simétrica distinta (con autovalores
+    positivos) y comprueba el resultado.
+\end{enumerate}
+
+\subsection{Errores comunes}
+\begin{itemize}
+  \item Confundir $\ket x$ con $\mathbf x$: HHL entrega el vector
+    \emph{normalizado}, no su tamaño.
+  \item Elegir $c$ mayor que el menor autovalor: entonces $c/\lambda_i>1$ y el
+    ángulo $2\sin^{-1}(c/\lambda_i)$ no existe.
+\end{itemize}
+
+\input{pie}

@@ -1,0 +1,15 @@
+x = (0, 0) -> aristas cortadas = 0
+x = (0, 1) -> aristas cortadas = 1
+x = (1, 0) -> aristas cortadas = 1
+x = (1, 1) -> aristas cortadas = 0
+Autovalores de Hc: [0. 0. 1. 1.] -> el maximo es 1.0
+La capa de costo coincide con e^{-i gamma Hc} (salvo fase): True
+Gradiente (parameter-shift): [-0.44849  0.08848] | numerico: [-0.44849  0.08848]
+p = 1: parametros = [-1.571  0.785] | <Hc> = 1.0000 (maximo posible = 1)
+cadena 00: probabilidad = 0.0000 | aristas cortadas = 0
+cadena 01: probabilidad = 0.5000 | aristas cortadas = 1
+cadena 10: probabilidad = 0.5000 | aristas cortadas = 1
+cadena 11: probabilidad = 0.0000 | aristas cortadas = 0
+p = 1: <Hc> = 1.0000
+p = 2: <Hc> = 1.0000
+p = 3: <Hc> = 1.0000

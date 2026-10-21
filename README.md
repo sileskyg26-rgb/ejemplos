@@ -4,7 +4,7 @@ Una introducción práctica a la computación cuántica con Qiskit: cada concept
 
 **A quién va:** estudiantes con álgebra lineal básica (vectores, matrices, números complejos) y algo de Python. Si algo de la notación no se entiende, empieza por el capítulo de [prerrequisitos y notación](docs/pdf/00_prerrequisitos.pdf).
 
-**Orden de lectura:** de arriba hacia abajo, del 1 al 17. Cada sección tiene la teoría, el botón de Colab y el PDF completo. También hay un [PDF con todo reunido](docs/pdf/main.pdf).
+**Orden de lectura:** de arriba hacia abajo, del 1 al 20. Cada sección tiene la teoría, el botón de Colab y el PDF completo. También hay un [PDF con todo reunido](docs/pdf/main.pdf).
 
 ## Estructura del repositorio
 
@@ -47,6 +47,9 @@ python fuentes/build_notebooks.py   # regenera notebooks/ desde fuentes/*.py
 15. [Algoritmo de Deutsch](#15-algoritmo-de-deutsch)
 16. [Algoritmo de Bernstein–Vazirani](#16-algoritmo-de-bernsteinvazirani)
 17. [QFT y estimación de fase](#17-qft-y-estimación-de-fase)
+18. [Algoritmo HHL](#18-algoritmo-hhl)
+19. [VQE](#19-vqe)
+20. [QAOA](#20-qaoa)
 
 > **Nota sobre el orden de bits:** Qiskit escribe las cadenas con el qubit 0 a la derecha. `'10'` significa $q_1=1,\ q_0=0$.
 
@@ -369,3 +372,54 @@ Se parece a la transformada de Fourier discreta, pero transforma un estado cuán
 La QFT pasa información del estado a la fase; la QPE la pasa de la fase al estado. Ejemplo: la puerta $S$ tiene $\varphi=1/4=0.01_2$.
 
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/17_qft_qpe.ipynb) [📄 Documento completo (PDF)](docs/pdf/17_qft_qpe.pdf)
+
+---
+
+## 18. Algoritmo HHL
+
+Resuelve sistemas lineales $A\mathbf x=\mathbf b$ (con $A$ hermítica $N\times N$). Clásicamente cuesta $O(N^3)$; en condiciones ideales HHL lo reduce a $O(\log N)$. Se usa como subrutina en aprendizaje automático cuántico.
+
+**La idea.** Se escribe $A=\sum_i\lambda_i\lvert u_i\rangle\langle u_i\rvert$ y $\lvert b\rangle=\sum_i\beta_i\lvert u_i\rangle$. Entonces
+
+$$\lvert x\rangle\ \propto\ \sum_i\frac{\beta_i}{\lambda_i}\lvert u_i\rangle:$$
+
+basta dividir cada coeficiente entre su autovalor.
+
+**Los tres componentes:** (1) estimación de fase, que halla los autovalores; (2) una **rotación controlada** que pone el recíproco $c/\lambda_i$ en la amplitud de un qubit auxiliar, con $c\le\min\lambda_i$; (3) estimación de fase inversa. Si el auxiliar se mide en $\lvert1\rangle$, el otro qubit queda en $\lvert x\rangle$.
+
+**Versión de dos qubits.** Para una matriz $2\times2$ con autovalores $2$ y $3$ el circuito se reduce a un qubit de codificación y uno auxiliar: $U^\dagger$, rotación $R_y$ controlada y $U$. El código compara con la solución clásica.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/18_hhl.ipynb) [📄 Documento completo (PDF)](docs/pdf/18_hhl.pdf)
+
+---
+
+## 19. VQE
+
+El **eigensolver cuántico variacional** calcula la energía aproximada del estado fundamental de un Hamiltoniano. Es un algoritmo **híbrido cuántico-clásico**, pensado para la era NISQ: parte corre en un computador cuántico y parte en uno clásico.
+
+Por el principio variacional, para cualquier estado de prueba $E_0\le\langle\psi\rvert H\lvert\psi\rangle/\langle\psi\vert\psi\rangle$, así que minimizar el valor esperado se acerca a $E_0$.
+
+1. Se escribe $H$ con operadores de Pauli.
+2. Un circuito con **parámetros** $\theta$ prepara el estado de prueba.
+3. Se mide $\langle H\rangle$ (también $=\mathrm{tr}(H\rho)$).
+4. Un optimizador clásico actualiza $\theta$; el gradiente se obtiene con la **regla del desplazamiento de parámetros**: $\frac{dE}{d\theta}=\frac{E(\theta+s)-E(\theta-s)}2$, $s=\pi/2$.
+5. Se repite hasta converger.
+
+El ejemplo usa el modelo de Heisenberg de dos qubits, $H=XX+YY+ZZ$, cuya energía mínima es $-3$.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/19_vqe.ipynb) [📄 Documento completo (PDF)](docs/pdf/19_vqe.pdf)
+
+---
+
+## 20. QAOA
+
+El **algoritmo de optimización cuántica aproximada** (Farhi, Goldstone y Gutmann, 2014) es un algoritmo híbrido para problemas de optimización combinatoria. Imita al algoritmo adiabático pero con evoluciones más cortas, buscando una solución aproximada.
+
+1. Se define un Hamiltoniano de **costo** $H_C$ (su estado de mayor energía codifica la solución) y uno de **mezcla** $H_M=\sum_iX_i$.
+2. Estado inicial: $\lvert+\rangle^{\otimes n}$.
+3. Cada capa aplica $e^{-i\gamma H_C}$ y luego $e^{-i\beta H_M}$; con $p$ capas hay $2p$ parámetros.
+4. Se **maximiza** $\langle H_C\rangle$ con un optimizador clásico.
+
+**Max-Cut:** repartir los vértices de un grafo en dos grupos para cortar el mayor número de aristas. Con $x_i\in\{0,1\}$, $L(x)=\sum_{(u,v)}(x_u+x_v-2x_ux_v)$, y al cambiar $x_i\to\frac{I-Z_i}2$ queda $H_C=\sum_{(u,v)}\frac{1-Z_uZ_v}2$. El ejemplo resuelve el caso de dos lugares unidos por una arista y estudia cómo cambia el resultado con el número de capas $p$.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/20_qaoa.ipynb) [📄 Documento completo (PDF)](docs/pdf/20_qaoa.pdf)
