@@ -1,8 +1,33 @@
-# Ejemplos de Qiskit: de qué va cada concepto
+# Computación cuántica desde cero
 
-Cada sección explica la teoría de un concepto y, al final, tiene el botón para ejecutar el notebook correspondiente en Google Colab. Cada notebook instala sus dependencias en la primera celda (`!pip install`), así que corre directo.
+Una introducción práctica a la computación cuántica con Qiskit: cada concepto tiene una explicación teórica, un notebook que se ejecuta en Google Colab sin instalar nada y un documento LaTeX/PDF con el código comentado, las salidas y ejercicios.
 
-Cada sección tiene además el enlace al documento LaTeX completo en PDF (con código comentado, salidas y ejercicios). También hay un [PDF con todo reunido](qiskit/latex/pdf/main.pdf), un capítulo de [prerrequisitos y notación](qiskit/latex/pdf/00_prerrequisitos.pdf) y las [fuentes .tex](qiskit/latex).
+**A quién va:** estudiantes con álgebra lineal básica (vectores, matrices, números complejos) y algo de Python. Si algo de la notación no se entiende, empieza por el capítulo de [prerrequisitos y notación](docs/pdf/00_prerrequisitos.pdf).
+
+**Orden de lectura:** de arriba hacia abajo, del 1 al 9. Cada sección tiene la teoría, el botón de Colab y el PDF completo. También hay un [PDF con todo reunido](docs/pdf/main.pdf).
+
+## Estructura del repositorio
+
+```
+├── README.md          # esta guía
+├── LICENSE            # MIT
+├── requirements.txt   # versiones fijas (qiskit, qiskit-aer, ...)
+├── notebooks/         # un notebook por concepto (se abren en Colab)
+├── desde-cero/        # simulador de un qubit en NumPy puro
+├── fuentes/           # los .py de los ejemplos, sus salidas y el generador de notebooks
+├── docs/              # documentación: latex/ (fuentes .tex) y pdf/ (compilados)
+├── tests/             # ejecuta cada notebook y verifica que no falle
+└── .github/workflows/probar-notebooks.yml
+```
+
+## Ejecutar en local
+
+```
+pip install -r requirements.txt
+pytest                         # ejecuta todos los notebooks y los tests
+python desde-cero/ejemplo.py   # el simulador de un qubit
+python fuentes/build_notebooks.py   # regenera notebooks/ desde fuentes/*.py
+```
 
 **Índice**
 
@@ -35,7 +60,7 @@ En el ejemplo: $\alpha=1/\sqrt3$ y $\beta=(1+i)/\sqrt3$, así que $P(0)=1/3$ y $
 
 **Error común:** olvidar normalizar. Qiskit no lo hace solo.
 
-[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/qiskit/01_qubit_vector.ipynb) [📄 Documento completo (PDF)](qiskit/latex/pdf/01_qubit_vector.pdf)
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/01_qubit_vector.ipynb) [📄 Documento completo (PDF)](docs/pdf/01_qubit_vector.pdf)
 
 ---
 
@@ -49,7 +74,7 @@ $$H=\frac1{\sqrt2}\begin{pmatrix}1&1\\1&-1\end{pmatrix},\quad X=\begin{pmatrix}0
 
 El ejemplo calcula $H\lvert0\rangle=(0.707,\,0.707)$ a mano con `@` y con `.evolve()`, y verifica numéricamente la unitariedad con `np.allclose` (nunca `==` con decimales).
 
-[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/qiskit/02_puertas_matrices.ipynb) [📄 Documento completo (PDF)](qiskit/latex/pdf/02_puertas_matrices.pdf)
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/02_puertas_matrices.ipynb) [📄 Documento completo (PDF)](docs/pdf/02_puertas_matrices.pdf)
 
 ---
 
@@ -66,7 +91,7 @@ Cada qubit extra **duplica** la memoria. Por eso simular es difícil, y es parte
 
 **Matiz:** esto aplica a la simulación de circuitos *generales* con vector de estado. Circuitos con estructura (por ejemplo, solo puertas Clifford) se simulan eficientemente. Y un computador cuántico no "guarda" $2^n$ números accesibles: al medir solo salen $n$ bits.
 
-[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/qiskit/03_crecimiento_exponencial.ipynb) [📄 Documento completo (PDF)](qiskit/latex/pdf/03_crecimiento_exponencial.pdf)
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/03_crecimiento_exponencial.ipynb) [📄 Documento completo (PDF)](docs/pdf/03_crecimiento_exponencial.pdf)
 
 ---
 
@@ -84,7 +109,7 @@ Para preparar $P(1)=0.25$ se usa $R_y(\theta)\lvert0\rangle=\cos\frac\theta2\lve
 
 Los conteos exactos cambian en cada ejecución; lo que se reproduce es la tendencia.
 
-[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/qiskit/04_medicion.ipynb) [📄 Documento completo (PDF)](qiskit/latex/pdf/04_medicion.pdf)
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/04_medicion.ipynb) [📄 Documento completo (PDF)](docs/pdf/04_medicion.pdf)
 
 ---
 
@@ -100,7 +125,7 @@ Si se inserta $Z$ entre las dos $H$, el resultado pasa a ser siempre $\lvert1\ra
 
 Este es el principio de los algoritmos cuánticos: diseñar las fases para que las respuestas incorrectas se cancelen y la correcta se refuerce.
 
-[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/qiskit/05a_interferencia.ipynb) [📄 Documento completo (PDF)](qiskit/latex/pdf/05a_interferencia.pdf)
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/05a_interferencia.ipynb) [📄 Documento completo (PDF)](docs/pdf/05a_interferencia.pdf)
 
 ---
 
@@ -116,7 +141,7 @@ $$\lvert\Phi^+\rangle=\tfrac1{\sqrt2}(\lvert00\rangle+\lvert11\rangle).$$
 
 **Correlación sin comunicación:** al medir solo salen `00` o `11`, cada uno con probabilidad $\frac12$. Cada resultado individual es aleatorio, así que no se puede enviar un mensaje con esto (*no-signaling*).
 
-[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/qiskit/05b_entrelazamiento_bell.ipynb) [📄 Documento completo (PDF)](qiskit/latex/pdf/05b_entrelazamiento_bell.pdf)
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/05b_entrelazamiento_bell.ipynb) [📄 Documento completo (PDF)](docs/pdf/05b_entrelazamiento_bell.pdf)
 
 ---
 
@@ -137,7 +162,7 @@ Para $N=8$: $k=2$ y $P_2\approx0.945$.
 
 Pasarse de iteraciones empeora el resultado, porque $P_k$ es periódica en $k$.
 
-[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/qiskit/06_grover_vs_clasico.ipynb) [📄 Documento completo (PDF)](qiskit/latex/pdf/06_grover_vs_clasico.pdf)
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/06_grover_vs_clasico.ipynb) [📄 Documento completo (PDF)](docs/pdf/06_grover_vs_clasico.pdf)
 
 ---
 
@@ -152,7 +177,7 @@ Práctica guiada para predecir resultados antes de ejecutarlos.
 
 Pregunta clave: ¿por qué nunca sale `01` ni `10`? Porque el CNOT fuerza que $q_1$ copie el valor de $q_0$ en la base computacional.
 
-[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/qiskit/07_bell_practica.ipynb) [📄 Documento completo (PDF)](qiskit/latex/pdf/07_bell_practica.pdf)
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/07_bell_practica.ipynb) [📄 Documento completo (PDF)](docs/pdf/07_bell_practica.pdf)
 
 ---
 
@@ -170,7 +195,7 @@ El ejemplo aplica 1 % de error tras cada $H$ y 5 % tras cada CNOT (las puertas d
 
 Un equipo real tiene además errores de lectura y decoherencia que este modelo no incluye.
 
-[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/qiskit/08_ruido_nisq.ipynb) [📄 Documento completo (PDF)](qiskit/latex/pdf/08_ruido_nisq.pdf)
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/08_ruido_nisq.ipynb) [📄 Documento completo (PDF)](docs/pdf/08_ruido_nisq.pdf)
 
 ---
 
@@ -182,4 +207,4 @@ $H\lvert0\rangle$ da 0 o 1 con probabilidad $\frac12$. Con $n$ qubits en paralel
 
 **Advertencia importante.** `AerSimulator` calcula las probabilidades y luego muestrea con un generador pseudoaleatorio, así que **en simulación los bits no son aleatoriedad física**. Solo en hardware real la fuente es física (e incluso ahí el ruido puede sesgar y se recomienda post-procesar).
 
-[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/qiskit/09_qrng.ipynb) [📄 Documento completo (PDF)](qiskit/latex/pdf/09_qrng.pdf)
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/09_qrng.ipynb) [📄 Documento completo (PDF)](docs/pdf/09_qrng.pdf)

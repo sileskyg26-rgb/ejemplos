@@ -5,6 +5,7 @@ from pathlib import Path
 import nbformat as nbf
 
 AQUI = Path(__file__).parent
+DESTINO = AQUI.parent / "notebooks"
 INSTALAR = "!pip install -q qiskit==2.5.0 qiskit-aer==0.17.2 matplotlib pylatexenc"
 
 
@@ -28,5 +29,6 @@ def a_notebook(ruta: Path) -> nbf.NotebookNode:
 
 
 for py in sorted(AQUI.glob("0*.py")):
-    nbf.write(a_notebook(py), py.with_suffix(".ipynb"))
-    print("generado", py.with_suffix(".ipynb").name)
+    destino = DESTINO / py.with_suffix(".ipynb").name
+    nbf.write(a_notebook(py), destino)
+    print("generado", destino.name)
