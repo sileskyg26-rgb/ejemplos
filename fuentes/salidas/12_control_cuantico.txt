@@ -1,0 +1,15 @@
+U^dagger U = I (es unitaria): True
+Suma de probabilidades antes  : 1.0
+Suma de probabilidades despues: 1.0
+theta = 2*pi*w1*t = 1.5708 rad (pi/2 = 1.5708)
+El pulso coincide con Rx(pi/2): True
+Ry(pi/2), Rx(th), Ry(-pi/2) == Rz(+th): True
+Ry(pi/2), Rx(th), Ry(-pi/2) == Rz(-th): False
+Con el orden cambiado        == Rz(+th): False | == Rz(-th): True
+desintonia =       0 Hz -> P(1) tras un pulso pi = 1.000
+desintonia =    1000 Hz -> P(1) tras un pulso pi = 0.317
+desintonia =   10000 Hz -> P(1) tras un pulso pi = 0.000
+otro qubit en |0>: qubit 0 queda en (x, y) = (+0.00, +1.00)
+otro qubit en |1>: qubit 0 queda en (x, y) = (+0.00, -1.00)
+t = 0.000 ms: rho == rho_A (x) rho_B? True | entropia del qubit 0 = 0.000 bit
+t = 0.718 ms: rho == rho_A (x) rho_B? False | entropia del qubit 0 = 1.000 bit

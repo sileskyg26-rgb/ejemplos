@@ -1,0 +1,137 @@
+\def\tituloconcepto{Control cuántico}
+\input{cabecera}
+
+\section{Control cuántico: Hamiltoniano, rotaciones y acoplamiento}
+
+\subsection{Objetivo}
+Entender de dónde salen las puertas cuánticas: cada una es una evolución
+unitaria $U(t)=e^{-iHt}$ que se consigue eligiendo el Hamiltoniano $H$.
+Se ve cómo se hacen rotaciones de un qubit, qué pasa con un pulso desafinado y
+cómo el acoplamiento entre dos qubits los entrelaza.
+
+\subsection{Conceptos previos}
+\begin{concepto}{unitariedad, matrices de Pauli y producto tensorial}
+Ver sección~\ref{sec:prerreq} (matrices unitarias y producto tensorial) y los
+capítulos~10 y~11. Las matrices de Pauli son
+$\sigma_x=\begin{psmallmatrix}0&1\\1&0\end{psmallmatrix}$,
+$\sigma_y=\begin{psmallmatrix}0&-i\\i&0\end{psmallmatrix}$ y
+$\sigma_z=\begin{psmallmatrix}1&0\\0&-1\end{psmallmatrix}$.
+\end{concepto}
+
+\subsection{Fundamento teórico}
+\paragraph{Unitariedad.} Una operación $U$ es unitaria si $U^\dagger U=I$. Los
+postulados de la mecánica cuántica dicen que toda evolución física, incluidas
+las operaciones lógicas de un computador cuántico, es unitaria. Su significado
+físico es que la suma de probabilidades se conserva:
+\begin{equation}
+  \langle U\psi|U\psi\rangle=\langle\psi|U^\dagger U|\psi\rangle
+  =\langle\psi|\psi\rangle=|\alpha|^2+|\beta|^2 .
+\end{equation}
+No se pierde ni se crea nada: la operación no destruye información.
+
+\paragraph{Hamiltoniano y evolución.} El Hamiltoniano $H$ es el operador de la
+energía total del sistema y manda su evolución en el tiempo (ecuación de
+Schrödinger):
+\begin{equation}
+  i\hbar\frac{d}{dt}\ket{\psi(t)}=H\ket{\psi(t)} .
+\end{equation}
+Con $\hbar=1$ y un $H$ constante, la solución es $\ket{\psi(t)}=U(t)\ket{\psi(0)}$
+con
+\begin{equation}
+  U(t)=e^{-iHt} .
+\end{equation}
+\emph{Controlar} un computador cuántico es, básicamente, modificar $H$ para
+obtener la evolución $U(t)$ deseada. En general $H=H_0+H_1$: la parte
+\emph{interna} $H_0$ (energía Zeeman de cada qubit y acoplamiento entre ellos)
+y la parte \emph{externa} $H_1$ (el campo de radiofrecuencia aplicado).
+
+\paragraph{Un qubit: rotaciones.} Un pulso resonante de duración $t$, frecuencia
+de Rabi $\omega_1$ y fase $\varphi$ produce
+\begin{equation}
+  U=\exp\!\Big[-i\,\pi\omega_1t\,\big(\cos\varphi\,\sigma_x+\sin\varphi\,\sigma_y\big)\Big],
+\end{equation}
+una \textbf{rotación} alrededor del eje $\cos\varphi\,\hat x+\sin\varphi\,\hat y$ de
+la esfera de Bloch, por un ángulo $\theta=2\pi\omega_1t$. La fase del pulso
+elige el eje y la duración elige el ángulo. Se escribe $R_x(\theta)$,
+$R_y(\theta)$, etc.
+
+\paragraph{La rotación alrededor de $z$.} Un solo pulso no puede girar
+alrededor de $z$, pero se puede armar con tres:
+\begin{enumerate}
+  \item girar $\pi/2$ alrededor de $y$ (el eje $x$ ocupa el lugar de $z$);
+  \item girar $\theta$ alrededor de $x$ (equivale a girar alrededor de $z$);
+  \item girar $\pi/2$ alrededor de $-y$ para volver al sistema original.
+\end{enumerate}
+Así, con pulsos de radiofrecuencia se puede girar un qubit alrededor de
+cualquier eje. El \textbf{orden de los pulsos importa}, porque las
+rotaciones, en general, no conmutan.
+
+\paragraph{Pulso desafinado.} Si la frecuencia del pulso difiere de la del
+qubit en $\Delta\omega$, la evolución combina dos giros a la vez: alrededor de
+$z$ (a frecuencia $\Delta\omega$) y alrededor del eje del pulso. Con una
+desintonía grande el pulso no logra excitar al qubit.
+
+\paragraph{Dos qubits acoplados.} Con acoplamiento $J_{12}$, la parte interna
+del Hamiltoniano (en el sistema doblemente rotante) es
+$H_0=2\pi J_{12}\,\sigma_z\otimes\sigma_z/4$. Es una rotación alrededor del eje
+$\sigma_z\otimes\sigma_z$, que equivale a decir que \emph{el eje de giro de un
+qubit depende del estado del otro}: si el otro está en $\ket0$ el eje es $+z$ y
+si está en $\ket1$ es $-z$. Si el otro qubit está en una superposición, la
+frecuencia de precesión también queda en superposición y los dos qubits se
+\textbf{entrelazan}.
+
+\paragraph{Criterio de entrelazamiento.} Si los qubits no están entrelazados,
+el estado total es un producto $\rho=\rho_A\otimes\rho_B$. Si $\rho$ no se
+puede escribir así, el sistema está entrelazado.
+
+\subsection{Código (completamente comentado)}
+\lstinputlisting[style=py]{../../fuentes/12_control_cuantico.py}
+
+\subsection{Explicación celda por celda}
+\begin{description}
+  \item[Celda 2] Calcula $U=e^{-iHt}$ para un $H$ cualquiera y comprueba
+    $U^\dagger U=I$ y que la suma de probabilidades sigue valiendo 1.
+  \item[Celda 3] Define $R_x$, $R_y$, $R_z$ y verifica que un pulso de
+    $0.25$~ms a $1000$~Hz es $R_x(\pi/2)$.
+  \item[Celda 4] Arma $R_z(\theta)$ con la secuencia de tres pulsos y
+    comprueba que el orden contrario da $R_z(-\theta)$.
+  \item[Celda 5] Aplica un pulso $\pi$ con distintas desintonías.
+  \item[Celda 6] Con $J=696$~Hz y $t=1/(2J)$ deja al qubit 0 en $\ket+$ y
+    muestra que su fase cambia de signo según el estado del qubit 1.
+  \item[Celda 7] Comprueba, desde $\ket{++}$, que tras $t=1/(2J)$ el estado
+    ya no es un producto.
+\end{description}
+
+\subsection{Salida obtenida}
+\lstinputlisting[style=salida]{../../fuentes/salidas/12_control_cuantico.txt}
+Es determinista (no hay medición).
+
+\subsection{Interpretación}
+La suma de probabilidades queda en 1 antes y después de $U$. Los tres pulsos
+$R_y(\pi/2)$, $R_x(\theta)$, $R_y(-\pi/2)$ dan $R_z(+\theta)$, y con el orden
+cambiado se obtiene $R_z(-\theta)$. Con desintonía de $1000$~Hz un pulso $\pi$
+solo logra $P(1)=0.317$, y con $10\,000$~Hz, $0.000$. Con el qubit 1 en
+$\ket0$ o en $\ket1$, el qubit 0 acaba en $(x,y)=(0,+1)$ o $(0,-1)$: fases
+opuestas. Tras $t=0.718$~ms el estado ya no es un producto y la entropía de un
+qubit es $1$ bit (máximo).
+
+\subsection{Ejercicios}
+\begin{enumerate}
+  \item Construye $R_z(\theta)$ con el orden contrario de pulsos
+    ($R_y(-\pi/2)$ primero) y comprueba qué signo obtienes.
+  \item ¿Qué tiempo $t$ hace falta con $J=696$~Hz para una rotación de
+    $\pi$ en el eje $\sigma_z\otimes\sigma_z$?
+  \item En la Celda~7, calcula la entropía para varios tiempos entre $0$ y
+    $1/J$ y observa cuándo es máxima.
+\end{enumerate}
+
+\subsection{Errores comunes}
+\begin{itemize}
+  \item Multiplicar las matrices en el orden en que se aplican los pulsos:
+    en un producto de matrices el primer pulso aplicado queda a la
+    \emph{derecha}.
+  \item Con \texttt{np.kron(A, B)}, el factor de la izquierda es el qubit 1 y el
+    de la derecha el qubit 0 (orden de Qiskit).
+\end{itemize}
+
+\input{pie}

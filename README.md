@@ -4,7 +4,7 @@ Una introducción práctica a la computación cuántica con Qiskit: cada concept
 
 **A quién va:** estudiantes con álgebra lineal básica (vectores, matrices, números complejos) y algo de Python. Si algo de la notación no se entiende, empieza por el capítulo de [prerrequisitos y notación](docs/pdf/00_prerrequisitos.pdf).
 
-**Orden de lectura:** de arriba hacia abajo, del 1 al 9. Cada sección tiene la teoría, el botón de Colab y el PDF completo. También hay un [PDF con todo reunido](docs/pdf/main.pdf).
+**Orden de lectura:** de arriba hacia abajo, del 1 al 13. Cada sección tiene la teoría, el botón de Colab y el PDF completo. También hay un [PDF con todo reunido](docs/pdf/main.pdf).
 
 ## Estructura del repositorio
 
@@ -40,6 +40,10 @@ python fuentes/build_notebooks.py   # regenera notebooks/ desde fuentes/*.py
 7. [Práctica: Bell y GHZ](#7-práctica-bell-variantes-y-ghz)
 8. [Ruido y era NISQ](#8-ruido-y-era-nisq)
 9. [Generador de números aleatorios cuántico](#9-generador-de-números-aleatorios-cuántico-qrng)
+10. [La esfera de Bloch](#10-la-esfera-de-bloch)
+11. [Oscilación de Rabi](#11-oscilación-de-rabi)
+12. [Control cuántico](#12-control-cuántico)
+13. [Tomografía de estados](#13-tomografía-de-estados)
 
 > **Nota sobre el orden de bits:** Qiskit escribe las cadenas con el qubit 0 a la derecha. `'10'` significa $q_1=1,\ q_0=0$.
 
@@ -208,3 +212,79 @@ $H\lvert0\rangle$ da 0 o 1 con probabilidad $\frac12$. Con $n$ qubits en paralel
 **Advertencia importante.** `AerSimulator` calcula las probabilidades y luego muestrea con un generador pseudoaleatorio, así que **en simulación los bits no son aleatoriedad física**. Solo en hardware real la fuente es física (e incluso ahí el ruido puede sesgar y se recomienda post-procesar).
 
 [![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/09_qrng.ipynb) [📄 Documento completo (PDF)](docs/pdf/09_qrng.pdf)
+
+---
+
+## 10. La esfera de Bloch
+
+Los coeficientes de un qubit son complejos: $\lvert\psi\rangle=r_1e^{i\gamma_1}\lvert0\rangle+r_2e^{i\gamma_2}\lvert1\rangle$. Dos ideas lo simplifican:
+
+1. **Solo importa la fase relativa.** La fase global no se puede observar (multiplicar todo el estado por $e^{i\gamma}$ no cambia nada medible), así que se queda solo $\varphi=\gamma_2-\gamma_1$.
+2. **Normalización.** Como $r_1^2+r_2^2=1$, se escribe $r_1=\cos\frac\theta2$ y $r_2=\sin\frac\theta2$.
+
+Resultado:
+
+$$\lvert\psi\rangle=\cos\tfrac\theta2\,\lvert0\rangle+e^{i\varphi}\sin\tfrac\theta2\,\lvert1\rangle.$$
+
+Cada qubit queda determinado por **dos ángulos**, es decir, es un punto de una esfera de radio 1: la **esfera de Bloch** (Felix Bloch, 1946). El polo norte es $\lvert0\rangle$, el polo sur es $\lvert1\rangle$, $\theta$ se mide desde el eje $z$ y $\varphi$ gira alrededor de él. Las coordenadas del punto son $(\langle X\rangle,\langle Y\rangle,\langle Z\rangle)=(\sin\theta\cos\varphi,\ \sin\theta\sin\varphi,\ \cos\theta)$.
+
+Las probabilidades dependen solo de $\theta$. Cambiar $\varphi$ mueve el punto alrededor de $z$ sin cambiar $P(0)$ ni $P(1)$: la fase relativa solo se nota después, por interferencia.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/10_esfera_bloch.ipynb) [📄 Documento completo (PDF)](docs/pdf/10_esfera_bloch.pdf)
+
+---
+
+## 11. Oscilación de Rabi
+
+Cuando la frecuencia de un campo de radiofrecuencia (RF) coincide con la del espín (**resonancia**), el espín absorbe energía y cambia de nivel. Es la base del control de qubits en estos sistemas.
+
+Si se mira desde un sistema que gira junto con el campo, el campo de RF se vuelve **estático**, con una dirección en el plano $xy$ que depende solo de la fase del pulso. En resonancia, el espín gira alrededor de ese eje a la **frecuencia de Rabi** $\omega_1$, y el ángulo de giro es
+
+$$\theta=2\pi\,\omega_1\,t.$$
+
+Partiendo de $\lvert0\rangle$, la probabilidad de medir 1 es $P(1)=\sin^2(\pi\omega_1 t)$: **oscila** entre 0 y 1. Un pulso con $\theta=\pi$ voltea el qubit (como la puerta $X$) y uno con $\theta=\pi/2$ lo deja en una superposición 50/50.
+
+**Cómo se mide $\omega_1$:** medir colapsa el estado, así que se prepara siempre $\lvert0\rangle$, se aplica un pulso de duración $t$, se mide muchas veces y se repite **aumentando poco a poco $t$**. Se ajusta un seno a los datos y de ahí sale $\omega_1$ (el código lo simula).
+
+**Desintonia:** si el pulso no es resonante, el espín gira además alrededor de $z$. Con una desintonia grande ese giro cancela el efecto del pulso y el qubit casi no se excita.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/11_oscilacion_rabi.ipynb) [📄 Documento completo (PDF)](docs/pdf/11_oscilacion_rabi.pdf)
+
+---
+
+## 12. Control cuántico
+
+Toda evolución física es **unitaria** ($U^\dagger U=I$): conserva la suma de probabilidades, así que no se pierde información. La evolución la manda el **Hamiltoniano** $H$ (la energía total) mediante la ecuación de Schrödinger $i\hbar\,\frac{d}{dt}\lvert\psi\rangle=H\lvert\psi\rangle$. Con $\hbar=1$ y $H$ constante:
+
+$$U(t)=e^{-iHt}.$$
+
+**Controlar** un computador cuántico es modificar $H$ para obtener la $U$ que se quiere. $H$ se separa en una parte interna (energía de cada qubit y acoplamiento entre ellos) y una externa (el campo de RF).
+
+- **Un qubit:** un pulso de fase $\varphi$ y duración $t$ es una **rotación** de ángulo $\theta=2\pi\omega_1t$ alrededor del eje $\cos\varphi\,\hat x+\sin\varphi\,\hat y$.
+- **Rotación alrededor de $z$:** un pulso no la da directamente, pero se arma con tres: $R_y(\pi/2)$, luego $R_x(\theta)$, luego $R_{-y}(\pi/2)$. El **orden importa**.
+- **Pulso desafinado:** gira a la vez alrededor de $z$ y del eje del pulso; con desintonia grande no excita.
+- **Dos qubits acoplados:** $H_0=2\pi J\,\sigma_z\otimes\sigma_z/4$. El eje de giro de un qubit **depende del estado del otro** ($+z$ si el otro es $\lvert0\rangle$, $-z$ si es $\lvert1\rangle$). Con el otro qubit en superposición, los dos quedan **entrelazados**.
+
+Criterio: sin entrelazamiento, $\rho=\rho_A\otimes\rho_B$; si $\rho$ no se puede escribir así, hay entrelazamiento.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/12_control_cuantico.ipynb) [📄 Documento completo (PDF)](docs/pdf/12_control_cuantico.pdf)
+
+---
+
+## 13. Tomografía de estados
+
+Al terminar un cálculo hay que **leer** el estado de los qubits. La tomografía lo hace por completo. Medir colapsa el estado, pero la información queda en las probabilidades.
+
+**Un qubit.** Las coordenadas en la esfera de Bloch son $(a,b,c)=(\langle\sigma_x\rangle,\langle\sigma_y\rangle,\langle\sigma_z\rangle)$ y $P(0)=\frac{1+c}2$, $P(1)=\frac{1-c}2$. Repitiendo la medición se estima cada una, y con ellas:
+
+$$\rho=\tfrac12\big(I+a\,\sigma_x+b\,\sigma_y+c\,\sigma_z\big).$$
+
+Si solo se puede medir en $z$, para medir $x$ o $y$ se aplica antes un pulso $\pi/2$ que gira ese eje hasta $z$.
+
+**Varios qubits.** $\rho$ se expande en productos de matrices de Pauli. Para dos qubits son 16 términos (uno es la normalización, hay que medir 15):
+
+$$\rho=\tfrac14\sum_{i,j}c_{ij}\,\sigma_i\otimes\sigma_j.$$
+
+Términos como $\sigma_x\otimes I$ son el momento angular de un qubit; términos como $\sigma_z\otimes\sigma_z$ son la **correlación** entre ambos. Con entrelazamiento no basta medir cada qubit por separado, porque parte de la información está en las correlaciones.
+
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sileskyg26-rgb/ejemplos/blob/main/notebooks/13_tomografia.ipynb) [📄 Documento completo (PDF)](docs/pdf/13_tomografia.pdf)

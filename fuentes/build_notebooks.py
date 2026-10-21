@@ -28,7 +28,7 @@ def a_notebook(ruta: Path) -> nbf.NotebookNode:
     return nb
 
 
-for py in sorted(AQUI.glob("0*.py")):
+for py in sorted(AQUI.glob("[0-9]*.py")):
     destino = DESTINO / py.with_suffix(".ipynb").name
     nbf.write(a_notebook(py), destino)
     print("generado", destino.name)

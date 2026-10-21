@@ -1,0 +1,7 @@
+Bloch real: [0.612 0.612 0.5  ]
+   100 shots -> (a, b, c) = (+0.640, +0.640, +0.520) | |(a,b,c)| = 1.044 | fidelidad = 1.0219
+  1000 shots -> (a, b, c) = (+0.588, +0.588, +0.498) | |(a,b,c)| = 0.969 | fidelidad = 0.9846
+ 10000 shots -> (a, b, c) = (+0.609, +0.609, +0.494) | |(a,b,c)| = 0.993 | fidelidad = 0.9966
+Coeficientes distintos de 0 (el resto ~ 0): {'II': 1.0, 'XX': 1.0, 'YY': -1.0, 'ZZ': 1.0}
+Fidelidad con el Bell ideal: 1.0
+Fidelidad del producto I/4 con el Bell real: 0.25
