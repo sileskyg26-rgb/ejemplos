@@ -1,0 +1,6 @@
+Iteraciones de Grover: 2
+P( 101 ) = 0.945
+N=               8  clásico ~                4  Grover ~          2
+N=           1,000  clásico ~              500  Grover ~         24
+N=       1,000,000  clásico ~          500,000  Grover ~        785
+N=1,000,000,000,000  clásico ~  500,000,000,000  Grover ~    785,398

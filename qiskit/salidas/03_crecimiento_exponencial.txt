@@ -1,0 +1,8 @@
+n= 1  amplitudes=                 2  memoria ~         0.0000 GiB
+n= 2  amplitudes=                 4  memoria ~         0.0000 GiB
+n=10  amplitudes=             1,024  memoria ~         0.0000 GiB
+n=20  amplitudes=         1,048,576  memoria ~         0.0156 GiB
+n=30  amplitudes=     1,073,741,824  memoria ~        16.0000 GiB
+n=40  amplitudes= 1,099,511,627,776  memoria ~    16,384.0000 GiB
+n=50  amplitudes=1,125,899,906,842,624  memoria ~ 16,777,216.0000 GiB
+16 amplitudes, cada una = 0.2500

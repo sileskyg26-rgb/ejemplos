@@ -1,0 +1,2 @@
+Bits: 10100010 -> entero: 162
+Jugada del bot: 3
