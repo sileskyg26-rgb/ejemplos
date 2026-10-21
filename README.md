@@ -10,7 +10,6 @@ Una introducción práctica a la computación cuántica con Qiskit: cada concept
 
 ```
 ├── README.md          # esta guía
-├── LICENSE            # todos los derechos reservados
 ├── requirements.txt   # versiones fijas (qiskit, qiskit-aer, ...)
 ├── notebooks/         # un notebook por concepto (se abren en Colab)
 ├── desde-cero/        # simulador de un qubit en NumPy puro
